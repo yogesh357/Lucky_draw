@@ -1,4 +1,4 @@
-a(function () {
+(function () {
   const ROLE_HOME = {
     CLIENT: 'client-dashboard.html',
     IB: 'ib-dashboard.html',
