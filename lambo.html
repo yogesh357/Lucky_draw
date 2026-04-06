@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Madocks Lambo Fund</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="screen-tabs">
+  <a class="screen-tab" href="how-it-works.html">How It Works</a>
+  <a class="screen-tab" href="login.html">Login</a>
+  <a class="screen-tab" href="client-dashboard.html">Client Dashboard</a>
+  <a class="screen-tab" href="spin.html">Spin Engine</a>
+  <a class="screen-tab" href="sure-win.html">Sure Win</a>
+  <a class="screen-tab active" href="lambo.html">Lambo Fund</a>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">M</div><div><div class="logo-text">Madocks</div><div class="logo-sub">Rewards Platform</div></div></div>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="client-dashboard.html">Dashboard</a>
+    <a class="nav-item" href="spin.html">Spin Engine</a>
+    <a class="nav-item" href="sure-win.html">Sure Win</a>
+    <a class="nav-item active" href="lambo.html">Lambo Fund</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar"><div class="topbar-title">Lambo Fund</div><div class="topbar-right"><div id="lambo-badge" class="topbar-badge" style="color:var(--gold);">0% of target</div></div></div>
+    <div class="page-content">
+      <div id="lambo-message" style="display:none;"></div>
+      <div class="lambo-visual" style="margin-bottom:24px;">
+        <div class="lambo-glow"></div>
+        <div style="font-size:20px;font-weight:800;margin-bottom:4px;">Lamborghini Huracan EVO</div>
+        <div style="font-size:14px;color:var(--muted);margin-bottom:20px;">Track the campaign target and your personal contribution below.</div>
+        <div class="progress-wrap" style="max-width:500px;margin:0 auto;">
+          <div class="progress-label">
+            <span id="lambo-fund-total" style="color:var(--gold);font-weight:700;">$0.00 contributed</span>
+            <span id="lambo-fund-target">Target: $0.00</span>
+          </div>
+          <div class="progress-track" style="height:14px;border-radius:7px;">
+            <div id="lambo-progress-bar" class="progress-fill gold" style="width:0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="card-title">Your Contribution</div>
+          <div id="lambo-your-balance" class="stat-value" style="color:var(--gold);">$0.00</div>
+          <div class="stat-sub">Append-only ledger derived</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Your % of Fund</div>
+          <div id="lambo-share" class="stat-value">0%</div>
+          <div class="stat-sub">Of total pool</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Distribution</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;"><span>Client</span><strong style="color:var(--green);">75%</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>IB</span><strong>15%</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>MIB</span><strong>10%</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><h3>Lambo Ledger</h3><span style="font-size:12px;color:var(--muted);">Append-only audit log</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Source</th><th>Reference</th><th>USD Added</th><th>Type</th></tr></thead>
+            <tbody id="lambo-ledger-body">
+              <tr><td colspan="5">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260402e"></script>
+<script src="nav.js?v=20260402e"></script>
+<script src="js/lambo.js?v=20260402e"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const message = document.getElementById('lambo-message');
+  const ids = ['lambo-badge','lambo-fund-total','lambo-fund-target','lambo-progress-bar','lambo-your-balance','lambo-share','lambo-ledger-body'];
+  const el = Object.fromEntries(ids.map(function (id) { return [id, document.getElementById(id)]; }));
+  if (!message) return;
+
+  function setMessage(text, type) {
+    const palette = {
+      info: { bg: 'rgba(79,123,255,.08)', border: 'rgba(79,123,255,.2)', color: '#9fb7ff' },
+      success: { bg: 'rgba(46,204,138,.08)', border: 'rgba(46,204,138,.2)', color: '#7fe3ad' },
+      error: { bg: 'rgba(239,83,80,.08)', border: 'rgba(239,83,80,.2)', color: '#ff9b99' }
+    };
+    const c = palette[type] || palette.info;
+    message.textContent = text;
+    message.style.display = text ? 'block' : 'none';
+    message.style.background = c.bg;
+    message.style.border = '1px solid ' + c.border;
+    message.style.color = c.color;
+    message.style.padding = '12px 14px';
+    message.style.borderRadius = '10px';
+    message.style.marginBottom = '16px';
+    message.style.fontSize = '13px';
+  }
+
+  function num(v,d){ return new Intl.NumberFormat('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}).format(Number(v||0)); }
+  function currency(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(v||0)); }
+
+  async function loadLambo() {
+    const [bRes, lRes] = await Promise.all([
+      fetch('api/lambo/get_balance.php', { credentials:'same-origin' }),
+      fetch('api/lambo/ledger.php', { credentials:'same-origin' })
+    ]);
+    const bJson = await bRes.json();
+    const lJson = await lRes.json();
+    if (!bRes.ok || bJson.ok === false) throw new Error(bJson.message || 'Failed to load Lambo balance');
+    if (!lRes.ok || lJson.ok === false) throw new Error(lJson.message || 'Failed to load Lambo ledger');
+
+    const data = bJson.data;
+    if (el['lambo-badge']) el['lambo-badge'].textContent = num(data.progress_percent, 2) + '% of target';
+    if (el['lambo-fund-total']) el['lambo-fund-total'].textContent = currency(data.fund_total) + ' contributed';
+    if (el['lambo-fund-target']) el['lambo-fund-target'].textContent = 'Target: ' + currency(data.target_amount);
+    if (el['lambo-progress-bar']) el['lambo-progress-bar'].style.width = Math.min(100, Number(data.progress_percent || 0)) + '%';
+    if (el['lambo-your-balance']) el['lambo-your-balance'].textContent = currency(data.user_balance);
+    if (el['lambo-share']) el['lambo-share'].textContent = num(data.fund_share_percent, 2) + '%';
+    if (el['lambo-ledger-body']) {
+      el['lambo-ledger-body'].innerHTML = (lJson.data.entries || []).map(function (entry) {
+        const badge = entry.type === 'EXPIRED_REALLOC' ? 'gold' : 'blue';
+        return '<tr><td>' + String(entry.created_at).slice(0,10) + '</td><td>' + entry.source + '</td><td>' + entry.reference_id + '</td><td style="color:var(--green);">' + currency(entry.amount_usd) + '</td><td><span class="badge badge-' + badge + '">' + entry.type + '</span></td></tr>';
+      }).join('') || '<tr><td colspan="5">No ledger entries yet</td></tr>';
+    }
+  }
+
+  loadLambo().catch(function (error) { setMessage(error.message || 'Failed to load Lambo', 'error'); });
+});
+</script>
+</body>
+</html>

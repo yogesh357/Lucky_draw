@@ -1,0 +1,1995 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Lucky Draw Prototype - Black & Orange</title>
+    <style>
+        :root {
+            --bg: #0b0b0c;
+            --panel: #121214;
+            --panel2: #16161a;
+            --text: #e9e9ee;
+            --muted: #a9a9b3;
+            --orange: #ff7a18;
+            --orange2: #ff9a3d;
+            --border: #24242a;
+            --good: #47d16c;
+            --warn: #ffcc66;
+            --bad: #ff5a5a;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+            --radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            background: radial-gradient(1200px 800px at 15% 10%, rgba(255, 122, 24, .10), transparent 55%),
+                radial-gradient(900px 700px at 85% 25%, rgba(255, 154, 61, .08), transparent 55%),
+                var(--bg);
+            color: var(--text);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            background: rgba(11, 11, 12, .72);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-inner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 24px;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 260px;
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--orange), var(--orange2));
+            box-shadow: 0 10px 24px rgba(255, 122, 24, .22);
+            position: relative;
+        }
+
+        .logo:after {
+            content: "";
+            position: absolute;
+            inset: 9px;
+            border: 2px solid rgba(0, 0, 0, .7);
+            border-radius: 7px;
+            opacity: .35;
+        }
+
+        .brand h1 {
+            font-size: 14px;
+            margin: 0;
+            letter-spacing: .3px;
+            text-transform: uppercase;
+        }
+
+        .brand small {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .tab {
+            border: 1px solid var(--border);
+            padding: 9px 12px;
+            border-radius: 999px;
+            background: rgba(18, 18, 20, .55);
+            color: var(--muted);
+            font-size: 13px;
+            transition: .15s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tab:hover {
+            border-color: rgba(255, 122, 24, .35);
+            color: var(--text);
+        }
+
+        .tab.active {
+            background: rgba(255, 122, 24, .14);
+            border-color: rgba(255, 122, 24, .55);
+            color: var(--text);
+            box-shadow: 0 0 0 3px rgba(255, 122, 24, .08);
+        }
+
+        .page {
+            display: none;
+            padding-top: 22px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.35fr .65fr;
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 980px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .brand {
+                min-width: auto;
+            }
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(255, 122, 24, .05), transparent 40%), var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .card.alt {
+            background: linear-gradient(180deg, rgba(255, 154, 61, .06), transparent 45%), var(--panel2);
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .title h2 {
+            margin: 0;
+            font-size: 16px;
+            letter-spacing: .2px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 122, 24, .45);
+            background: rgba(255, 122, 24, .10);
+            font-size: 12px;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 99px;
+            background: var(--orange);
+            box-shadow: 0 0 0 4px rgba(255, 122, 24, .15);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 14px;
+        }
+
+        .col-12 {
+            grid-column: span 12;
+        }
+
+        .col-8 {
+            grid-column: span 8;
+        }
+
+        .col-6 {
+            grid-column: span 6;
+        }
+
+        .col-5 {
+            grid-column: span 5;
+        }
+
+        .col-4 {
+            grid-column: span 4;
+        }
+
+        .col-3 {
+            grid-column: span 3;
+        }
+
+        .col-7 {
+            grid-column: span 7;
+        }
+
+        @media (max-width: 980px) {
+
+            .col-8,
+            .col-7,
+            .col-6,
+            .col-5,
+            .col-4,
+            .col-3 {
+                grid-column: span 12;
+            }
+        }
+
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 980px) {
+            .kpis {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 520px) {
+            .kpis {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kpi {
+            background: rgba(18, 18, 20, .65);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .kpi .label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .kpi .value {
+            font-size: 22px;
+            margin-top: 6px;
+            letter-spacing: .2px;
+        }
+
+        .kpi .sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .flow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .flow .node {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(18, 18, 20, .55);
+            min-width: 220px;
+        }
+
+        .node b {
+            font-size: 13px;
+        }
+
+        .node small {
+            color: var(--muted);
+        }
+
+        .arrow {
+            color: rgba(255, 122, 24, .85);
+            font-weight: 700;
+            font-size: 18px;
+            opacity: .95;
+        }
+
+        .section {
+            margin-top: 14px;
+            border-top: 1px solid var(--border);
+            padding-top: 14px;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 980px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .bullets {
+            margin: 10px 0 0 0;
+            padding-left: 18px;
+            color: var(--text);
+        }
+
+        .bullets li {
+            margin: 8px 0;
+            color: var(--muted);
+        }
+
+        .bullets li b {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .btn {
+            border: 1px solid rgba(255, 122, 24, .55);
+            background: rgba(255, 122, 24, .14);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: .15s ease;
+            user-select: none;
+        }
+
+        .btn:hover {
+            background: rgba(255, 122, 24, .20);
+        }
+
+        .btn.ghost {
+            border: 1px solid var(--border);
+            background: rgba(18, 18, 20, .55);
+            color: var(--text);
+        }
+
+        .btn.ghost:hover {
+            border-color: rgba(255, 122, 24, .35);
+        }
+
+        .btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            height: 12px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress>div {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--orange), var(--orange2));
+            border-right: 1px solid rgba(0, 0, 0, .35);
+            transition: width .25s ease;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(18, 18, 20, .55);
+        }
+
+        .table th,
+        .table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            font-size: 13px;
+        }
+
+        .table th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .table td {
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .03);
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .badge.good {
+            border-color: rgba(71, 209, 108, .35);
+            color: rgba(71, 209, 108, .95);
+            background: rgba(71, 209, 108, .08);
+        }
+
+        .badge.warn {
+            border-color: rgba(255, 204, 102, .35);
+            color: rgba(255, 204, 102, .95);
+            background: rgba(255, 204, 102, .08);
+        }
+
+        .badge.bad {
+            border-color: rgba(255, 90, 90, .35);
+            color: rgba(255, 90, 90, .95);
+            background: rgba(255, 90, 90, .08);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 0 0 10px 0;
+        }
+
+        .panel-title h3 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .panel-title .right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 980px) {
+            .split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer-note {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .toast {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            width: min(420px, calc(100vw - 36px));
+            background: rgba(18, 18, 20, .92);
+            border: 1px solid rgba(255, 122, 24, .35);
+            border-radius: 14px;
+            padding: 12px 12px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast b {
+            display: block;
+            font-size: 13px;
+        }
+
+        .toast small {
+            color: var(--muted);
+        }
+
+        .seg {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: rgba(18, 18, 20, .45);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px;
+        }
+
+        .seg button {
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--muted);
+            padding: 8px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .seg button.active {
+            background: rgba(255, 122, 24, .12);
+            border-color: rgba(255, 122, 24, .35);
+            color: var(--text);
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(18, 18, 20, .45);
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .stat span {
+            color: var(--muted);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(18, 18, 20, .55);
+            color: var(--text);
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <div class="logo"></div>
+                <div>
+                    <h1>Lucky Draw</h1>
+                    <small>Black & Orange UI Prototype</small>
+                </div>
+            </div>
+
+            <div class="nav" id="nav">
+                <div class="tab active" data-page="login">Login</div>
+                <div class="tab" data-page="how">How It Works</div>
+                <div class="tab" data-page="dash">Dashboard</div>
+                <div class="tab" data-page="leader">Leaderboard</div>
+                <div class="tab" data-page="rewards">Rewards</div>
+                <div class="tab" data-page="admin">Admin</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- =========================
+         PAGE: LOGIN
+    ========================== -->
+        <section class="page active" id="page-login">
+            <div class="card" style="max-width: 480px; margin: 40px auto;">
+                <div class="title">
+                    <h2>Login</h2>
+                </div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="btns">
+                        <button type="submit" class="btn">Login</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- =========================
+         PAGE: HOW IT WORKS
+    ========================== -->
+        <section class="page" id="page-how">
+            <div class="hero">
+                <div class="card">
+                    <div class="title">
+                        <h2>Trade. Spin. Win. Drive a Lambo.</h2>
+                        <div class="pill"><span class="dot"></span>Transparent Rules</div>
+                    </div>
+
+                    <p class="muted" style="margin-top:0; line-height:1.55;">
+                        This screen explains the full concept clearly for users: how lots convert into Spin credits, how
+                        Sure Win works,
+                        and how Lambo Fund progress is tracked. All numbers shown below are demo values and can be
+                        configured in your backend.
+                    </p>
+
+                    <div class="flow">
+                        <div class="node">
+                            <b>1 Lot Traded</b>
+                            <small>Executed lot volume tracked from backend</small>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="node">
+                            <b>1 USD → Spin Wallet</b>
+                            <small>Used for Spin x1 / Spin x10 & Sure Win accumulation</small>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="node">
+                            <b>1 USD → Lambo Fund</b>
+                            <small>Progress tracked across Client / IB / MIB dashboards</small>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="two-col">
+                            <div>
+                                <div class="panel-title">
+                                    <h3>Spin Mechanics</h3>
+                                    <span class="badge warn">Pool-based</span>
+                                </div>
+                                <ul class="bullets">
+                                    <li><b>1 Lot = 1 Spin Credit</b> (1 USD equivalent).</li>
+                                    <li><b>Spin x10</b> can trigger a bonus (example: +1 bonus spin or a probability
+                                        boost).</li>
+                                    <li><b>Free Spins</b> (marketing) are in a separate wallet and do not affect Sure
+                                        Win or Lambo Fund.</li>
+                                    <li><b>Fairness</b>: winner selection is server-side, seed-based, auditable.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <div class="panel-title">
+                                    <h3>Sure Win</h3>
+                                    <span class="badge good">Guaranteed</span>
+                                </div>
+                                <ul class="bullets">
+                                    <li>Users accumulate <b>Sure Win Points</b> from eligible activity.</li>
+                                    <li>Points unlock <b>guaranteed rewards</b> at milestones (e.g., 500, 1000, 1500).
+                                    </li>
+                                    <li>Progress bar shows: <b>current points</b>, <b>next milestone</b>, <b>points
+                                            remaining</b>.</li>
+                                    <li>Unlocks are <b>idempotent</b> and cannot duplicate.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="two-col" style="margin-top:12px;">
+                            <div>
+                                <div class="panel-title">
+                                    <h3>Lambo Fund</h3>
+                                    <span class="badge">Milestone</span>
+                                </div>
+                                <ul class="bullets">
+                                    <li>Lambo Fund receives <b>1 USD per traded lot</b> (from the 2 USD cap per lot).
+                                    </li>
+                                    <li>Track progress for <b>Client</b>, <b>IB</b>, <b>MIB</b> levels.</li>
+                                    <li>Dashboard shows <b>self contribution</b> and <b>network contribution</b> (for
+                                        IB/MIB).</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <div class="panel-title">
+                                    <h3>Expiry & Notifications</h3>
+                                    <span class="badge bad">Time-sensitive</span>
+                                </div>
+                                <ul class="bullets">
+                                    <li>Spin credits can be configured to <b>expire</b> (e.g., monthly).</li>
+                                    <li>Expiry monitor shows <b>how many spins expire</b> and <b>in how many days</b>.
+                                    </li>
+                                    <li>Notifications: expiry alerts, milestone proximity, jackpot pool updates.</li>
+                                    <li>Anti-spam rule: <b>max 2 notifications/day</b>.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="footer-note">
+                            Financial safety principle: keep a hard cap on company exposure (example: <b>2 USD per
+                                lot</b>). Monitor pool balances,
+                            pending rewards liability, and risk thresholds (example: alert if liability ratio exceeds
+                            70%).
+                        </div>
+                    </div>
+
+                    <div class="btns">
+                        <button class="btn" onclick="go('dash')">Go to Dashboard</button>
+                        <button class="btn ghost"
+                            onclick="toast('Fairness & auditability', 'Use server-side RNG with seed logging for reproducibility.')">See
+                            Fairness Note</button>
+                    </div>
+                </div>
+
+                <div class="card alt">
+                    <div class="title">
+                        <h2>Quick FAQ</h2>
+                        <div class="pill"><span class="dot"></span>Support</div>
+                    </div>
+
+                    <div class="stat"><b>What happens if I don’t spin?</b><span>Expiry monitor + reminders</span></div>
+                    <div class="stat"><b>Do free spins count?</b><span>No, separate wallet</span></div>
+                    <div class="stat"><b>How do I earn Sure Win?</b><span>Lots → points</span></div>
+                    <div class="stat"><b>How is the draw fair?</b><span>Seed-based RNG</span></div>
+                    <div class="stat"><b>Where can I see my history?</b><span>Dashboard → History</span></div>
+
+                    <div class="section">
+                        <div class="panel-title">
+                            <h3>Demo Config</h3>
+                            <span class="badge">Editable</span>
+                        </div>
+
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Rule</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Exposure cap</td>
+                                    <td>2 USD / lot</td>
+                                </tr>
+                                <tr>
+                                    <td>Spin allocation</td>
+                                    <td>1 USD / lot</td>
+                                </tr>
+                                <tr>
+                                    <td>Lambo allocation</td>
+                                    <td>1 USD / lot</td>
+                                </tr>
+                                <tr>
+                                    <td>Points per lot</td>
+                                    <td>10</td>
+                                </tr>
+                                <tr>
+                                    <td>Max notifications</td>
+                                    <td>2/day</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="btns">
+                            <button class="btn ghost"
+                                onclick="toast('Prototype note', 'This is a static HTML demo. Hook APIs later for real data.')">Prototype
+                                Note</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================
+         PAGE: DASHBOARD
+    ========================== -->
+        <section class="page" id="page-dash">
+            <div class="grid">
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>Personal Dashboard</h3>
+                        <div class="right">
+                            <div class="seg" role="tablist" aria-label="Role selector">
+                                <button id="role-client" class="active" onclick="setRole('Client')">Client</button>
+                                <button id="role-ib" onclick="setRole('IB')">IB</button>
+                                <button id="role-mib" onclick="setRole('MIB')">MIB</button>
+                            </div>
+                            <span class="pill"><span class="dot"></span><span id="roleBadge">Client</span></span>
+                        </div>
+                    </div>
+
+                    <div class="kpis">
+                        <div class="kpi">
+                            <div class="label">Monthly Lots</div>
+                            <div class="value" id="kpiLots">245.3</div>
+                            <div class="sub">Synced from backend</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Available Spins</div>
+                            <div class="value" id="kpiSpins">38</div>
+                            <div class="sub">Spin wallet</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Expiring Spins</div>
+                            <div class="value" id="kpiExpire">6</div>
+                            <div class="sub">in <span id="kpiExpireDays">3</span> days</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Sure Win Points</div>
+                            <div class="value" id="kpiPoints">820</div>
+                            <div class="sub">Next: <span id="kpiNextMilestone">1000</span></div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Lambo Progress</div>
+                            <div class="value" id="kpiLamboPct">14%</div>
+                            <div class="sub">Target: <span id="kpiTarget">$600,000</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spin Engine -->
+                <div class="col-7 card">
+                    <div class="panel-title">
+                        <h3>Spin Engine</h3>
+                        <div class="right">
+                            <span class="badge warn">Jackpot Pool: <b id="jackpotPool">$48,200</b></span>
+                            <span class="badge">Boost: <b id="boost">x1.0</b></span>
+                        </div>
+                    </div>
+
+                    <div class="split">
+                        <div class="card alt" style="box-shadow:none; border-color: rgba(255,255,255,.06);">
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                                <div>
+                                    <div class="muted" style="font-size:12px;">Spin Wallet</div>
+                                    <div style="font-size:24px; margin-top:6px;"><b id="spinWallet">38</b> spins</div>
+                                </div>
+                                <div class="pill"
+                                    title="Free spins are separate and do not count toward Sure Win or Lambo">
+                                    <span class="dot"></span> Free spins: <b id="freeSpins">4</b>
+                                </div>
+                            </div>
+
+                            <div class="btns">
+                                <button class="btn" id="btnSpin1" onclick="spin(1)">Spin x1</button>
+                                <button class="btn" id="btnSpin10" onclick="spin(10)">Spin x10</button>
+                                <button class="btn ghost" onclick="useFreeSpin()">Use Free Spin</button>
+                            </div>
+
+                            <div class="section">
+                                <div class="panel-title">
+                                    <h3>Probability Indicator</h3>
+                                    <span class="badge">Demo</span>
+                                </div>
+                                <div class="progress">
+                                    <div id="probBar"></div>
+                                </div>
+                                <div class="meta-row">
+                                    <span>Base chance</span>
+                                    <span><b id="probText">8%</b> (visual only)</span>
+                                </div>
+                                <div class="footer-note">
+                                    In production: compute probability server-side, log seed for audit, and ensure
+                                    expected payout stays under cap.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card alt" style="box-shadow:none; border-color: rgba(255,255,255,.06);">
+                            <div class="panel-title">
+                                <h3>Spin Results</h3>
+                                <span class="badge">History</span>
+                            </div>
+                            <table class="table" style="margin-top:10px;">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Result</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="spinHistory">
+                                    <tr>
+                                        <td class="muted">Today 10:14</td>
+                                        <td>Near-miss</td>
+                                        <td class="muted">+0</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="muted">Yesterday 18:20</td>
+                                        <td>Small reward</td>
+                                        <td class="muted">+20 pts</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="section">
+                                <div class="panel-title">
+                                    <h3>Expiry Monitor</h3>
+                                    <span class="badge bad">Action needed</span>
+                                </div>
+                                <div class="progress">
+                                    <div id="expiryBar"></div>
+                                </div>
+                                <div class="meta-row">
+                                    <span><b id="expCount">6</b> spins expire</span>
+                                    <span>in <b id="expDays">3</b> days</span>
+                                </div>
+                                <div class="btns">
+                                    <button class="btn ghost"
+                                        onclick="toast('Expiry reminder', 'We’ll notify you before spins expire (max 2/day).')">Enable
+                                        reminders</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sure Win -->
+                <div class="col-5 card">
+                    <div class="panel-title">
+                        <h3>Sure Win Progress</h3>
+                        <span class="badge good">Guaranteed</span>
+                    </div>
+
+                    <div class="muted" style="font-size:12px;">Current Points</div>
+                    <div style="font-size:28px; margin-top:6px;"><b id="points">820</b></div>
+
+                    <div class="section">
+                        <div class="muted" style="font-size:12px;">Next Milestone</div>
+                        <div
+                            style="display:flex; justify-content:space-between; gap:10px; align-items:center; margin-top:6px;">
+                            <div style="font-size:16px;"><b id="nextMilestone">1000</b> points</div>
+                            <span class="badge">Remaining: <b id="pointsRemaining">180</b></span>
+                        </div>
+                        <div class="progress" style="margin-top:10px;">
+                            <div id="surewinBar"></div>
+                        </div>
+                        <div class="meta-row">
+                            <span>Unlocked reward: <b id="currentReward">Hoodie</b></span>
+                            <span>Next reward: <b id="nextReward">iPad</b></span>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="panel-title">
+                            <h3>Notifications Center</h3>
+                            <span class="badge">Max 2/day</span>
+                        </div>
+                        <table class="table" style="margin-top:10px;">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notifs">
+                                <tr>
+                                    <td><span class="badge bad">Expiry</span></td>
+                                    <td class="muted">6 spins expire in 3 days.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge good">Sure Win</span></td>
+                                    <td class="muted">You’re 180 pts away from iPad.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge warn">Jackpot</span></td>
+                                    <td class="muted">Jackpot pool increased today.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="btns">
+                        <button class="btn ghost"
+                            onclick="toast('Milestone logic', 'In production, milestone unlocks are idempotent to prevent duplicates.')">Milestone
+                            note</button>
+                    </div>
+                </div>
+
+                <!-- Lambo Tracker -->
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>Lambo Fund Tracker</h3>
+                        <div class="right">
+                            <span class="badge">Role view: <b id="lamboRole">Client</b></span>
+                            <span class="badge warn">Fund pool (demo): <b id="lamboPool">$612,400</b></span>
+                        </div>
+                    </div>
+
+                    <div class="split">
+                        <div>
+                            <div class="stat"><b>Self Contribution</b><span id="selfContribution">$2,450</span></div>
+                            <div class="stat" id="networkRow" style="display:none;"><b>Network Contribution</b><span
+                                    id="networkContribution">$18,920</span></div>
+                            <div class="stat"><b>Progress</b><span><b id="lamboPct">14%</b> of target</span></div>
+                            <div class="progress" style="margin-top:10px;">
+                                <div id="lamboBar"></div>
+                            </div>
+                            <div class="meta-row">
+                                <span>Target</span>
+                                <span><b id="lamboTarget">$600,000</b></span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="panel-title">
+                                <h3>Fund Ledger (Demo)</h3>
+                                <span class="badge">Audit</span>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Source</th>
+                                        <th>Lots</th>
+                                        <th>USD</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lamboLedger">
+                                    <tr>
+                                        <td class="muted">2026-02-20</td>
+                                        <td>Trade allocation</td>
+                                        <td class="muted">12.4</td>
+                                        <td class="muted">$12.40</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="muted">2026-02-18</td>
+                                        <td>Expired spin reallocation</td>
+                                        <td class="muted">3.0</td>
+                                        <td class="muted">$3.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="footer-note">
+                                In production: ledger entries are append-only; totals are computed from ledger to
+                                preserve auditability.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>Activity History</h3>
+                        <div class="right">
+                            <span class="badge">Trade → Spin Conversion</span>
+                            <span class="badge">Spin Results</span>
+                            <span class="badge">Sure Win Unlocks</span>
+                            <span class="badge">Lambo Ledger</span>
+                        </div>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Category</th>
+                                <th>Detail</th>
+                                <th>Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity">
+                            <tr>
+                                <td class="muted">Today 09:10</td>
+                                <td><span class="badge">Trade</span></td>
+                                <td class="muted">+3.2 lots synced</td>
+                                <td class="muted">+3 spins, +32 pts, +$3.20 Lambo</td>
+                            </tr>
+                            <tr>
+                                <td class="muted">Yesterday 18:20</td>
+                                <td><span class="badge warn">Spin</span></td>
+                                <td class="muted">Spin x1 → Small reward</td>
+                                <td class="muted">+20 pts</td>
+                            </tr>
+                            <tr>
+                                <td class="muted">Yesterday 08:01</td>
+                                <td><span class="badge good">Sure Win</span></td>
+                                <td class="muted">Milestone check</td>
+                                <td class="muted">No unlock</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================
+         PAGE: LEADERBOARD
+    ========================== -->
+        <section class="page" id="page-leader">
+            <div class="grid">
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>Leaderboards</h3>
+                        <div class="right">
+                            <span class="badge">Social Proof</span>
+                            <span class="badge">Top Traders / IB / MIB</span>
+                        </div>
+                    </div>
+                    <!-- <p class="muted" style="margin-top:0; line-height:1.55;">
+                        Loaded from `/api/dashboard.php` so every row reflects the database totals instead of static
+                        placeholders.
+                    </p> -->
+                    <p class="muted" id="leaderboard-note">
+                        Loading leaderboard data...
+                    </p>
+                </div>
+
+                <div class="col-6 card alt">
+                    <div class="panel-title">
+                        <h3>Top Traders (Monthly Lots)</h3>
+                        <span class="badge">This month</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>User</th>
+                                <th>Lots</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-table">
+                            <tr>
+                                <td class="muted">&bull;</td>
+                                <td colspan="3" class="muted">Loading leaderboard...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-6 card alt">
+                    <div class="panel-title">
+                        <h3>Top IB / MIB (Network Lots)</h3>
+                        <span class="badge">This month</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Leader</th>
+                                <th>Role</th>
+                                <th>Network Lots</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ib-leaderboard-table">
+                            <tr>
+                                <td class="muted">&bull;</td>
+                                <td colspan="3" class="muted">Loading leaderboard...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- =========================
+         PAGE: REWARDS
+    ========================== -->
+        <section class="page" id="page-rewards">
+            <div class="grid">
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>Rewards Marketplace</h3>
+                        <div class="right">
+                            <span class="badge good">Sure Win</span>
+                            <span class="badge warn">Spin Prizes</span>
+                        </div>
+                    </div>
+                    <p class="muted" style="margin-top:0; line-height:1.55;">
+                        Rewards page shows available prizes, milestone rewards, and claim status. In production, enforce
+                        anti-duplication and inventory limits.
+                    </p>
+                </div>
+
+                <div class="col-6 card alt">
+                    <div class="panel-title">
+                        <h3>Sure Win Milestones</h3>
+                        <span class="badge">Configurable</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Milestone</th>
+                                <th>Reward</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="milestones">
+                            <tr>
+                                <td class="muted">500</td>
+                                <td>Hoodie</td>
+                                <td><span class="badge good">Unlocked</span></td>
+                            </tr>
+                            <tr>
+                                <td class="muted">1000</td>
+                                <td>iPad</td>
+                                <td><span class="badge warn">In progress</span></td>
+                            </tr>
+                            <tr>
+                                <td class="muted">1500</td>
+                                <td>iPhone</td>
+                                <td><span class="badge">Locked</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="btns">
+                        <button class="btn"
+                            onclick="toast('Claim flow', 'In production: verify eligibility server-side and mark reward as claimed idempotently.')">Claim
+                            flow note</button>
+                    </div>
+                </div>
+
+                <div class="col-6 card alt">
+                    <div class="panel-title">
+                        <h3>Spin Prize Pool (Examples)</h3>
+                        <span class="badge">2x pricing model</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Prize</th>
+                                <th>Cost</th>
+                                <th>Spin Credits Needed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Gift Card</td>
+                                <td class="muted">$50</td>
+                                <td class="muted">100</td>
+                            </tr>
+                            <tr>
+                                <td>AirPods</td>
+                                <td class="muted">$200</td>
+                                <td class="muted">400</td>
+                            </tr>
+                            <tr>
+                                <td>iPhone</td>
+                                <td class="muted">$2000</td>
+                                <td class="muted">4000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="footer-note">
+                        “Spin Credits Needed” uses the 2x pricing idea: if real cost is X, require 2X credits to protect
+                        margin.
+                    </div>
+                </div>
+
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>My Rewards</h3>
+                        <span class="badge">History</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Reward</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="muted">2026-02-12</td>
+                                <td>Sure Win</td>
+                                <td>Hoodie</td>
+                                <td><span class="badge good">Claimed</span></td>
+                            </tr>
+                            <tr>
+                                <td class="muted">2026-02-05</td>
+                                <td>Spin</td>
+                                <td>Gift Card</td>
+                                <td><span class="badge warn">Pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================
+         PAGE: ADMIN
+    ========================== -->
+        <section class="page" id="page-admin">
+            <div class="grid">
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>Admin Panel</h3>
+                        <div class="right">
+                            <span class="badge">Controls</span>
+                            <span class="badge bad">Risk & Exposure</span>
+                            <span class="badge">Fraud Flags</span>
+                        </div>
+                    </div>
+                    <p class="muted" style="margin-top:0; line-height:1.55;">
+                        Admin panel to control configuration, monitor financial exposure, run calculations, and view
+                        audit logs.
+                        This HTML is a UI shell; connect real APIs later.
+                    </p>
+                </div>
+
+                <div class="col-6 card alt">
+                    <div class="panel-title">
+                        <h3>Sync & Jobs</h3>
+                        <span class="badge">Ops</span>
+                    </div>
+                    <ul class="bullets">
+                        <li><b>Sync trades</b> (incremental, dedupe by order_id).</li>
+                        <li><b>Run monthly calculation</b> (entries, expiry, ledger).</li>
+                        <li><b>Select winners</b> (secure RNG, seed logged).</li>
+                        <li><b>Export reports</b> (CSV).</li>
+                    </ul>
+                    <div class="btns">
+                        <button class="btn"
+                            onclick="toast('Trade sync', 'Would call POST /admin/sync-trades and store deduped trades locally.')">Sync
+                            trades</button>
+                        <button class="btn ghost"
+                            onclick="toast('Monthly calc', 'Would compute entries/expiry from local DB; write ledgers idempotently.')">Run
+                            monthly calc</button>
+                        <button class="btn ghost"
+                            onclick="toast('Winner selection', 'Use crypto-secure RNG, store seed + winning ticket for audit.')">Pick
+                            winners</button>
+                    </div>
+                </div>
+
+                <div class="col-6 card alt">
+                    <div class="panel-title">
+                        <h3>Config</h3>
+                        <span class="badge">Editable</span>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Setting</th>
+                                <th>Value</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Exposure cap</td>
+                                <td class="muted">2 USD / lot</td>
+                                <td class="muted">Hard limit</td>
+                            </tr>
+                            <tr>
+                                <td>Spin per lot</td>
+                                <td class="muted">1</td>
+                                <td class="muted">Credits</td>
+                            </tr>
+                            <tr>
+                                <td>Lambo per lot</td>
+                                <td class="muted">1 USD</td>
+                                <td class="muted">Ledger-based</td>
+                            </tr>
+                            <tr>
+                                <td>Points per lot</td>
+                                <td class="muted">10</td>
+                                <td class="muted">Sure Win</td>
+                            </tr>
+                            <tr>
+                                <td>Max notifications</td>
+                                <td class="muted">2/day</td>
+                                <td class="muted">Anti-spam</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="btns">
+                        <button class="btn ghost"
+                            onclick="toast('Config safety', 'All calculations must be decimal-precise and idempotent.')">Config
+                            safety note</button>
+                    </div>
+                </div>
+
+                <div class="col-12 card">
+                    <div class="panel-title">
+                        <h3>Exposure & Liability Monitoring</h3>
+                        <div class="right">
+                            <span class="badge bad">Alert threshold: 70%</span>
+                            <span class="badge">Demo Metrics</span>
+                        </div>
+                    </div>
+
+                    <div class="two-col">
+                        <div>
+                            <div class="muted" style="font-size:12px;">Liability Ratio</div>
+                            <div style="font-size:28px; margin-top:6px;"><b id="liabRatio">52%</b></div>
+                            <div class="progress" style="margin-top:10px;">
+                                <div id="liabBar"></div>
+                            </div>
+                            <div class="meta-row">
+                                <span>Pending rewards</span>
+                                <span><b id="pendingRewards">$92,100</b></span>
+                            </div>
+                            <div class="meta-row">
+                                <span>Spin pool balance</span>
+                                <span><b id="spinPool">$184,500</b></span>
+                            </div>
+                            <div class="meta-row">
+                                <span>Lambo fund balance</span>
+                                <span><b id="lamboFund">$612,400</b></span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="panel-title">
+                                <h3>Fraud Flags (Demo)</h3>
+                                <span class="badge">Review</span>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Account</th>
+                                        <th>Flag</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="muted">AC-10291</td>
+                                        <td>Lot spike anomaly</td>
+                                        <td><span class="badge warn">Investigate</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="muted">AC-88310</td>
+                                        <td>Self-trading pattern</td>
+                                        <td><span class="badge bad">Hold</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="muted">AC-33411</td>
+                                        <td>Internal account</td>
+                                        <td><span class="badge good">Excluded</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="btns">
+                                <button class="btn ghost"
+                                    onclick="toast('Fraud controls', 'In production: allow admin override + audit logging for every change.')">Fraud
+                                    controls note</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="footer-note">
+                        Admin must ensure payout exposure never exceeds cap per lot. Track pools separately and keep
+                        ledger append-only for audit.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="toast" id="toast">
+        <b id="toastTitle">Title</b>
+        <small id="toastText">Text</small>
+    </div>
+
+    <script>
+        // ---------- Navigation ----------
+        const tabs = document.querySelectorAll(".tab");
+        function go(page) {
+            tabs.forEach(t => t.classList.toggle("active", t.dataset.page === page));
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.getElementById("page-" + page).classList.add("active");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+        tabs.forEach(t => t.addEventListener("click", () => go(t.dataset.page)));
+
+        // ---------- Toast ----------
+        let toastTimer = null;
+        function toast(title, text) {
+            const el = document.getElementById("toast");
+            document.getElementById("toastTitle").textContent = title;
+            document.getElementById("toastText").textContent = text;
+            el.classList.add("show");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+        }
+
+        // ---------- Demo State ----------
+        const state = {
+            role: "Client",
+            monthlyLots: 245.3,
+            spinWallet: 38,
+            freeSpins: 4,
+            expiringSpins: 6,
+            expiringDays: 3,
+            points: 820,
+            nextMilestone: 1000,
+            currentReward: "Hoodie",
+            nextReward: "iPad",
+            lamboTargetUsd: 600000,
+            lamboSelfUsd: 2450,
+            lamboNetworkUsd: 18920,
+            lamboProgressPct: 14, // demo
+            jackpotPool: 48200,
+            boost: 1.0,
+            baseProb: 8, // demo visual only
+            liabilityRatio: 52,
+            pendingRewards: 92100,
+            spinPool: 184500,
+            lamboFund: 612400
+        };
+
+        const DASHBOARD_API = "/Lucky_draw/php/api/dashboard.php";
+        const ROLE_LABEL_MAP = {
+            client: "Client",
+            ib: "IB",
+            mib: "MIB",
+        };
+
+        function updateRoleLabels(roleKey) {
+            const label = ROLE_LABEL_MAP[(roleKey ?? "").toLowerCase()] ?? "Client";
+            state.role = label;
+            const badge = document.getElementById("roleBadge");
+            if (badge) badge.textContent = label;
+            const lamRole = document.getElementById("lamboRole");
+            if (lamRole) lamRole.textContent = label;
+            const activeBtn = { Client: "role-client", IB: "role-ib", MIB: "role-mib" }[label];
+            ["role-client", "role-ib", "role-mib"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle("active", id === activeBtn);
+            });
+        }
+
+        // ---------- Role Selector ----------
+        function setRole(role) {
+            state.role = role;
+
+            // Toggle segment buttons
+            document.getElementById("role-client").classList.toggle("active", role === "Client");
+            document.getElementById("role-ib").classList.toggle("active", role === "IB");
+            document.getElementById("role-mib").classList.toggle("active", role === "MIB");
+
+            // Update badge
+            document.getElementById("roleBadge").textContent = role;
+            document.getElementById("lamboRole").textContent = role;
+
+            // Update role-specific KPI demo tweaks
+            if (role === "Client") {
+                state.lamboProgressPct = 14;
+                state.monthlyLots = 245.3;
+                state.spinWallet = Math.max(state.spinWallet, 12);
+                document.getElementById("networkRow").style.display = "none";
+            } else if (role === "IB") {
+                state.lamboProgressPct = 22;
+                state.monthlyLots = 680.8; // demo
+                document.getElementById("networkRow").style.display = "flex";
+            } else {
+                state.lamboProgressPct = 31;
+                state.monthlyLots = 1180.6; // demo
+                document.getElementById("networkRow").style.display = "flex";
+            }
+            render();
+            toast("Role switched", "Viewing dashboard as " + role + ".");
+        }
+
+        // ---------- Spin Logic (Demo) ----------
+        async function spin(n) {
+            if (typeof TI?.doSpin === "function") {
+                await TI.doSpin(n === 10 ? "x10" : "x1", false);
+                await hydrateDashboardFromApi();
+                return;
+            }
+
+            if (state.spinWallet < n) {
+                toast("Not enough spins", "You have " + state.spinWallet + " spins available.");
+                return;
+            }
+            state.spinWallet -= n;
+
+            // Demo: x10 sets a temporary boost
+            if (n === 10) {
+                state.boost = Math.min(1.5, state.boost + 0.2);
+            }
+
+            // Demo outcome (visual only)
+            const outcomes = [
+                { label: "Near-miss", pts: 0 },
+                { label: "Small reward", pts: 20 },
+                { label: "Medium reward", pts: 60 },
+                { label: "Big reward", pts: 120 },
+            ];
+            const pick = outcomes[Math.floor(Math.random() * outcomes.length)];
+            const gained = pick.pts * n / 1; // scale
+            state.points += gained;
+
+            addSpinHistory(n, pick.label, gained);
+
+            toast("Spin completed", `Spin x${n}: ${pick.label} (+${gained} pts)`);
+
+            // milestone check (demo)
+            maybeUnlock();
+            render();
+        }
+
+        async function useFreeSpin() {
+            if (typeof TI?.doSpin === "function") {
+                await TI.doSpin("x1", true);
+                await hydrateDashboardFromApi();
+                return;
+            }
+
+            if (state.freeSpins <= 0) {
+                toast("No free spins", "You currently have 0 free spins.");
+                return;
+            }
+            state.freeSpins -= 1;
+            const gained = 10 + Math.floor(Math.random() * 20);
+            state.points += gained;
+            addSpinHistory("FREE", "Promo spin", gained + " pts");
+            toast("Free spin used", `Promo spin (+${gained} pts). Free spins do not affect Lambo/Sure Win rules in production.`);
+            maybeUnlock();
+            render();
+        }
+
+        function updateLeaderboardNote(traderCount, ibCount) {
+            const note = document.getElementById("leaderboard-note");
+            if (!note) return;
+
+            if (!traderCount && !ibCount) {
+                note.textContent = "No leaderboard data available yet.";
+                return;
+            }
+
+            note.textContent = `Loaded ${traderCount} traders and ${ibCount} IB/MIB records from database.`;
+        }
+        function addSpinHistory(n, label, value) {
+            const tbody = document.getElementById("spinHistory");
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, "0");
+            const mm = String(now.getMinutes()).padStart(2, "0");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td class="muted">Today ${hh}:${mm}</td>
+        <td>${label}</td>
+        <td class="muted">+${value}</td>
+      `;
+            tbody.prepend(row);
+
+            // Also add to activity
+            const activity = document.getElementById("activity");
+            const row2 = document.createElement("tr");
+            row2.innerHTML = `
+        <td class="muted">Today ${hh}:${mm}</td>
+        <td><span class="badge warn">Spin</span></td>
+        <td class="muted">${typeof n === "number" ? "Spin x" + n : n} → ${label}</td>
+        <td class="muted">+${value}</td>
+      `;
+            activity.prepend(row2);
+        }
+
+        function maybeUnlock() {
+            if (state.points >= 500 && state.currentReward !== "Hoodie") {
+                state.currentReward = "Hoodie";
+            }
+            // Demo: Unlock at 1000 triggers toast
+            if (state.points >= state.nextMilestone) {
+                toast("Sure Win unlocked!", "You reached " + state.nextMilestone + " points. Reward unlocked (demo).");
+                // Advance milestone
+                if (state.nextMilestone === 1000) {
+                    state.nextMilestone = 1500;
+                    state.nextReward = "iPhone";
+                } else if (state.nextMilestone === 1500) {
+                    state.nextMilestone = 2000;
+                    state.nextReward = "Premium Reward";
+                } else {
+                    state.nextMilestone += 500;
+                }
+            }
+        }
+
+        // ---------- Render ----------
+        function render() {
+            // KPIs
+            document.getElementById("kpiLots").textContent = state.monthlyLots.toFixed(1);
+            document.getElementById("kpiSpins").textContent = state.spinWallet;
+            document.getElementById("kpiExpire").textContent = state.expiringSpins;
+            document.getElementById("kpiExpireDays").textContent = state.expiringDays;
+
+            document.getElementById("kpiPoints").textContent = Math.floor(state.points);
+            document.getElementById("kpiNextMilestone").textContent = state.nextMilestone;
+
+            document.getElementById("kpiLamboPct").textContent = state.lamboProgressPct + "%";
+            document.getElementById("kpiTarget").textContent = "$" + state.lamboTargetUsd.toLocaleString();
+
+            // Spin panel
+            document.getElementById("spinWallet").textContent = state.spinWallet;
+            document.getElementById("freeSpins").textContent = state.freeSpins;
+            document.getElementById("jackpotPool").textContent = "$" + state.jackpotPool.toLocaleString();
+            document.getElementById("boost").textContent = "x" + state.boost.toFixed(1);
+
+            // Disable buttons
+            document.getElementById("btnSpin1").disabled = state.spinWallet < 1;
+            document.getElementById("btnSpin10").disabled = state.spinWallet < 10;
+
+            // Probability bar (demo visual only)
+            const prob = Math.min(100, Math.round(state.baseProb * state.boost));
+            document.getElementById("probText").textContent = prob + "%";
+            document.getElementById("probBar").style.width = prob + "%";
+
+            // Expiry bar (visual: more expiring -> more filled)
+            const expFill = Math.min(100, Math.round((state.expiringSpins / 20) * 100));
+            document.getElementById("expiryBar").style.width = expFill + "%";
+            document.getElementById("expCount").textContent = state.expiringSpins;
+            document.getElementById("expDays").textContent = state.expiringDays;
+
+            // Sure win
+            document.getElementById("points").textContent = Math.floor(state.points);
+            document.getElementById("nextMilestone").textContent = state.nextMilestone;
+            const remain = Math.max(0, state.nextMilestone - Math.floor(state.points));
+            document.getElementById("pointsRemaining").textContent = remain;
+            document.getElementById("currentReward").textContent = state.currentReward;
+            document.getElementById("nextReward").textContent = state.nextReward;
+            const barPct = Math.max(0, Math.min(100, Math.round((Math.floor(state.points) % 500) / 500 * 100)));
+            // If milestone is 1000, progress from 500->1000; if 1500, from 1000->1500, etc.
+            // For demo: map to last milestone boundary
+            const lastMilestone = state.nextMilestone - 500;
+            const span = 500;
+            const surePct = Math.max(0, Math.min(100, Math.round(((state.points - lastMilestone) / span) * 100)));
+            document.getElementById("surewinBar").style.width = surePct + "%";
+
+            // Lambo
+            document.getElementById("selfContribution").textContent = "$" + state.lamboSelfUsd.toLocaleString();
+            document.getElementById("networkContribution").textContent = "$" + state.lamboNetworkUsd.toLocaleString();
+            document.getElementById("lamboPct").textContent = state.lamboProgressPct + "%";
+            document.getElementById("lamboTarget").textContent = "$" + state.lamboTargetUsd.toLocaleString();
+            document.getElementById("lamboBar").style.width = Math.min(100, state.lamboProgressPct) + "%";
+            document.getElementById("lamboPool").textContent = "$" + state.lamboFund.toLocaleString();
+
+            // Admin exposure
+            document.getElementById("liabRatio").textContent = state.liabilityRatio + "%";
+            document.getElementById("liabBar").style.width = Math.min(100, state.liabilityRatio) + "%";
+            document.getElementById("pendingRewards").textContent = "$" + state.pendingRewards.toLocaleString();
+            document.getElementById("spinPool").textContent = "$" + state.spinPool.toLocaleString();
+            document.getElementById("lamboFund").textContent = "$" + state.lamboFund.toLocaleString();
+        }
+
+        function formatDateTime(value) {
+            if (!value) return "—";
+            const utcString = value.endsWith("Z") ? value : `${value}Z`;
+            const dt = new Date(utcString);
+            if (Number.isNaN(dt.getTime())) return value;
+            return dt.toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        }
+
+        function formatCurrency(value) {
+            const n = Number(value);
+            if (Number.isNaN(n)) return "$0";
+            return `$${n.toFixed(2)}`;
+        }
+
+        //: lead board
+        function renderLeaderboard(rows) {
+            const tbody = document.getElementById("leaderboard-table");
+            if (!tbody) return;
+
+            if (!rows || !rows.length) {
+                tbody.innerHTML = `
+            <tr>
+                <td class="muted" colspan="4">No data available.</td>
+            </tr>
+        `;
+                return;
+            }
+
+            tbody.innerHTML = rows.map((row, index) => `
+        <tr>
+            <td class="muted">${index + 1}</td>
+            <td>${row.username}</td>
+            <td class="muted">${Number(row.total_lots).toFixed(2)}</td>
+            <td><span class="badge">${row.tier}</span></td>
+        </tr>
+    `).join("");
+        }
+        function renderIbLeaderboard(rows) {
+            const tbody = document.getElementById("ib-leaderboard-table");
+            if (!tbody) return;
+
+            if (!rows || !rows.length) {
+                tbody.innerHTML = `
+            <tr>
+                <td class="muted" colspan="4">No IB/MIB data.</td>
+            </tr>
+        `;
+                return;
+            }
+
+            tbody.innerHTML = rows.map((row, index) => `
+        <tr>
+            <td class="muted">${index + 1}</td>
+            <td>${row.username}</td>
+            <td><span class="badge">${row.role}</span></td>
+            <td class="muted">${Number(row.network_lots).toFixed(2)}</td>
+        </tr>
+    `).join("");
+        }
+
+        function renderSpinHistory(spins) {
+            const tbody = document.getElementById("spinHistory");
+            if (!tbody) return;
+            if (!spins || !spins.length) {
+                tbody.innerHTML = `<tr><td class="muted" colspan="3">No spins recorded yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = spins.slice(0, 5).map(s => {
+                const time = formatDateTime(s.created_at);
+                const result = s.prize_won ? s.prize_won : '<span class="muted">No prize</span>';
+                const value = s.prize_value ? formatCurrency(s.prize_value) : `<span class="muted">+0</span>`;
+                return `<tr>
+                    <td class="muted">${time}</td>
+                    <td>${result}</td>
+                    <td class="muted">${value}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        function renderActivityHistory(spins) {
+            const tbody = document.getElementById("activity");
+            if (!tbody) return;
+            if (!spins || !spins.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="muted">No activity yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = spins.slice(0, 5).map((s, index) => {
+                const time = formatDateTime(s.created_at);
+                const category = s.is_free ? "Free Spin" : "Spin";
+                const detail = `${s.spin_type} ${category}`;
+                const impact = s.prize_won
+                    ? `+${formatCurrency(s.prize_value ?? 0)} prize`
+                    : `-${s.credits_used} credit${s.credits_used > 1 ? "s" : ""}`;
+                return `<tr>
+                    <td class="muted">${time}</td>
+                    <td><span class="badge">${category}</span></td>
+                    <td class="muted">${detail}</td>
+                    <td class="muted">${impact}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        async function hydrateDashboardFromApi() {
+            try {
+                const response = await fetch(DASHBOARD_API, { credentials: "include" });
+                if (response.status === 401) {
+                    console.info("Dashboard requires authentication");
+                    return;
+                }
+                const payload = await response.json();
+                if (!payload.success) {
+                    throw new Error(payload.error || "Dashboard request failed");
+                }
+
+                const data = payload.data ?? {};
+                const points = Number(data.sure_win?.wallet?.points ?? state.points);
+                const spinData = data.spin_wallet ?? {};
+                const lamboData = data.lambo_wallet ?? {};
+                const milestones = Array.isArray(data.sure_win?.milestones) ? data.sure_win.milestones : [];
+                const nextMilestoneRow = milestones.find(m => Number(m.points_req) > points);
+                const unlocked = [...milestones].reverse().find(m => Number(m.points_req) <= points);
+
+                state.monthlyLots = Number(data.monthly_lots ?? state.monthlyLots);
+                state.spinWallet = Number(spinData.balance ?? state.spinWallet);
+                state.freeSpins = Number(spinData.free_balance ?? state.freeSpins);
+                state.points = points;
+                state.currentReward = unlocked ? unlocked.reward_name : state.currentReward;
+
+                if (nextMilestoneRow) {
+                    state.nextMilestone = Number(nextMilestoneRow.points_req);
+                    state.nextReward = nextMilestoneRow.reward_name;
+                } else if (milestones.length) {
+                    const lastReq = Number(milestones[milestones.length - 1].points_req);
+                    state.nextMilestone = lastReq + 500;
+                    state.nextReward = "Premium Reward";
+                }
+
+                state.lamboFund = Number(lamboData.balance ?? state.lamboFund);
+                state.lamboSelfUsd = state.lamboFund;
+                const networkLots = Array.isArray(data.ib_leaderboard)
+                    ? data.ib_leaderboard.reduce((sum, row) => sum + Number(row.network_lots ?? 0), 0)
+                    : 0;
+                state.lamboNetworkUsd = networkLots;
+                const pct = state.lamboTargetUsd ? (state.lamboFund / state.lamboTargetUsd) * 100 : 0;
+                state.lamboProgressPct = Math.min(100, Math.max(0, Math.round(pct)));
+
+                updateRoleLabels(data.user?.role);
+                render();
+                renderSpinHistory(data.recent_spins ?? []);
+                renderActivityHistory(data.recent_spins ?? []);
+                renderLeaderboard(data.leaderboard ?? []);
+                renderIbLeaderboard(data.ib_leaderboard ?? []);
+                updateLeaderboardNote(
+                    data.leaderboard?.length ?? 0,
+                    data.ib_leaderboard?.length ?? 0
+                );
+            } catch (error) {
+                console.warn("Dashboard refresh failed", error);
+                if (typeof toast === "function") {
+                    toast("Dashboard load failed", error.message ?? "Unable to refresh data.");
+                }
+            }
+        }
+
+        // Init
+        render();
+        hydrateDashboardFromApi();
+    </script>
+    <script src="ajax/trading-incentive-ajax.js"></script>
+</body>
+
+</html>

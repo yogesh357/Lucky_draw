@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Madocks Admin Trade Sync</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="screen-tabs">
+  <a class="screen-tab" href="admin-overview.html">Admin Overview</a>
+  <a class="screen-tab" href="admin-config.html">Admin Config</a>
+  <a class="screen-tab active" href="admin-trade-sync.html">Admin Trade Sync</a>
+  <a class="screen-tab" href="admin-exposure.html">Admin Exposure</a>
+  <a class="screen-tab" href="admin-fraud.html">Admin Fraud</a>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark" style="background:var(--red);">A</div><div><div class="logo-text">Admin Panel</div><div class="logo-sub">Madocks Rewards</div></div></div>
+    <div class="nav-section">Admin</div>
+    <a class="nav-item" href="admin-overview.html">Overview</a>
+    <a class="nav-item" href="admin-exposure.html">Exposure</a>
+    <a class="nav-item active" href="admin-trade-sync.html">Trade Sync</a>
+    <a class="nav-item" href="admin-config.html">Config</a>
+    <a class="nav-item" href="admin-fraud.html">Fraud</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar"><div class="topbar-title">Trade Sync</div></div>
+    <div class="page-content">
+      <div id="trade-sync-message" style="display:none;"></div>
+      <div class="grid grid-2" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="section-head"><h3>CSV Upload</h3></div>
+          <form id="csv-upload-form">
+            <input id="csv-file" type="file" accept=".csv" style="display:none;"/>
+            <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:32px;text-align:center;margin-bottom:16px;">
+              <div style="font-size:32px;margin-bottom:8px;">CSV</div>
+              <div style="font-weight:600;margin-bottom:4px;">Choose a CSV file</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Required columns: order_id, user_id, lots, trade_date</div>
+              <button id="browse-csv-btn" type="button" class="btn btn-secondary btn-sm">Browse File</button>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Upload and Process</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="section-head"><h3>Manual Trade Entry</h3></div>
+          <form id="manual-trade-form">
+            <div class="form-group"><label class="form-label">User ID / Email</label><input class="form-input" name="user_id" placeholder="client@demo.com"/></div>
+            <div class="form-group"><label class="form-label">Order ID</label><input class="form-input" name="order_id" placeholder="Unique order identifier"/></div>
+            <div class="form-group"><label class="form-label">Lots</label><input class="form-input" name="lots" type="number" step="0.01" placeholder="2.50"/></div>
+            <div class="form-group"><label class="form-label">Trade Date</label><input class="form-input" name="trade_date" type="date"/></div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Add Trade</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><h3>Recent Sync Log</h3><span id="sync-log-badge" class="badge badge-green">Loading...</span></div>
+        <table>
+          <thead><tr><th>Time</th><th>Method</th><th>Trades</th><th>Lots</th><th>Duplicates</th><th>Status</th></tr></thead>
+          <tbody id="sync-log-body">
+            <tr><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260402f"></script>
+<script src="nav.js?v=20260402f"></script>
+<script src="js/admin-trade-sync.js?v=20260402f"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const message = document.getElementById('trade-sync-message');
+  const csvForm = document.getElementById('csv-upload-form');
+  const manualForm = document.getElementById('manual-trade-form');
+  const fileInput = document.getElementById('csv-file');
+  const browse = document.getElementById('browse-csv-btn');
+  const badge = document.getElementById('sync-log-badge');
+  const body = document.getElementById('sync-log-body');
+  if (!message || !csvForm || !manualForm || !fileInput || !browse || !badge || !body) return;
+
+  function setMessage(text, ok) {
+    message.textContent = text;
+    message.style.display = text ? 'block' : 'none';
+    message.style.background = ok ? 'rgba(46,204,138,.08)' : 'rgba(239,83,80,.08)';
+    message.style.border = ok ? '1px solid rgba(46,204,138,.2)' : '1px solid rgba(239,83,80,.2)';
+    message.style.color = ok ? '#7fe3ad' : '#ff9b99';
+    message.style.padding = '12px 14px';
+    message.style.borderRadius = '10px';
+    message.style.marginBottom = '16px';
+  }
+  function num(v,d){ return new Intl.NumberFormat('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}).format(Number(v||0)); }
+  function shortDate(v){ return v ? new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short'}).format(new Date(v)) : '-'; }
+
+  function loadLogs() {
+    fetch('api/trade/logs.php', { credentials:'same-origin' })
+      .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+      .then(function (payload) {
+        if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Failed to load trade logs');
+        const logs = payload.json.data.logs || [];
+        badge.textContent = logs[0] ? ('Last sync: ' + shortDate(logs[0].created_at)) : 'No sync yet';
+        body.innerHTML = logs.map(function (log) {
+          return '<tr><td>' + shortDate(log.created_at) + '</td><td><span class="badge badge-blue">' + log.method + '</span></td><td>' + num(log.trades_processed,0) + '</td><td>' + num(log.total_lots,2) + '</td><td>' + num(log.duplicates_count,0) + '</td><td><span class="badge badge-green">' + log.status + '</span></td></tr>';
+        }).join('') || '<tr><td colspan="6">No sync logs yet</td></tr>';
+      })
+      .catch(function (error) { setMessage(error.message || 'Failed to load trade logs', false); });
+  }
+
+  browse.addEventListener('click', function () { fileInput.click(); });
+
+  csvForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (!fileInput.files.length) {
+      setMessage('Choose a CSV file first.', false);
+      return;
+    }
+    const fd = new FormData();
+    fd.append('csv', fileInput.files[0]);
+    fetch('api/trade/sync_csv.php', { method:'POST', credentials:'same-origin', body:fd })
+      .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+      .then(function (payload) {
+        if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'CSV sync failed');
+        setMessage((payload.json.message || 'CSV sync complete') + '. Processed ' + payload.json.processed + ', duplicates ' + payload.json.duplicates + '.', true);
+        loadLogs();
+      })
+      .catch(function (error) { setMessage(error.message || 'CSV sync failed', false); });
+  });
+
+  manualForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(manualForm).entries());
+    fetch('api/trade/add_trade.php', {
+      method:'POST',
+      credentials:'same-origin',
+      headers:{ 'Content-Type':'application/json', 'Idempotency-Key':'manual-trade-' + Date.now() },
+      body: JSON.stringify(data)
+    })
+    .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+    .then(function (payload) {
+      if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Manual trade failed');
+      setMessage(payload.json.message || 'Manual trade saved', true);
+      manualForm.reset();
+      loadLogs();
+    })
+    .catch(function (error) { setMessage(error.message || 'Manual trade failed', false); });
+  });
+
+  loadLogs();
+});
+</script>
+</body>
+</html>

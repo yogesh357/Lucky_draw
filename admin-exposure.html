@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Madocks Admin Exposure</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="screen-tabs">
+  <a class="screen-tab" href="admin-overview.html">Admin Overview</a>
+  <a class="screen-tab" href="admin-config.html">Admin Config</a>
+  <a class="screen-tab" href="admin-trade-sync.html">Admin Trade Sync</a>
+  <a class="screen-tab active" href="admin-exposure.html">Admin Exposure</a>
+  <a class="screen-tab" href="admin-fraud.html">Admin Fraud</a>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark" style="background:var(--red);">A</div><div><div class="logo-text">Admin Panel</div><div class="logo-sub">Madocks Rewards</div></div></div>
+    <div class="nav-section">Admin</div>
+    <a class="nav-item" href="admin-overview.html">Overview</a>
+    <a class="nav-item active" href="admin-exposure.html">Exposure</a>
+    <a class="nav-item" href="admin-trade-sync.html">Trade Sync</a>
+    <a class="nav-item" href="admin-config.html">Config</a>
+    <a class="nav-item" href="admin-fraud.html">Fraud</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Exposure and Liability</div>
+      <div class="topbar-right"><span id="exposure-safe-badge" class="badge badge-green">Loading...</span></div>
+    </div>
+    <div class="page-content">
+      <div id="exposure-message" style="display:none;"></div>
+      <div class="grid grid-4" style="margin-bottom:24px;">
+        <div class="metric-card"><div class="metric-label">Spin Pool</div><div id="exposure-spin-pool" class="metric-value" style="color:var(--blue);">$0.00</div><div class="metric-sub">Total allocated</div></div>
+        <div class="metric-card"><div class="metric-label">Pending Rewards</div><div id="exposure-pending" class="metric-value" style="color:var(--yellow);">$0.00</div><div class="metric-sub">Unpaid liability</div></div>
+        <div class="metric-card"><div class="metric-label">Liability Ratio</div><div id="exposure-ratio" class="metric-value">0%</div><div class="metric-sub">Alert at 70%</div></div>
+        <div class="metric-card"><div class="metric-label">Lambo Fund</div><div id="exposure-lambo" class="metric-value" style="color:var(--gold);">$0.00</div><div class="metric-sub">Current fund total</div></div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="section-head"><h3>Liability Gauge</h3></div>
+          <div style="text-align:center;padding:24px 0 16px;">
+            <div class="gauge-wrap" style="width:160px;height:80px;margin:0 auto;">
+              <div class="gauge-track" style="width:160px;height:160px;"></div>
+              <div class="gauge-fill" style="width:160px;height:160px;transform:rotate(187deg);"></div>
+              <div id="exposure-gauge" class="gauge-val" style="font-size:22px;">0%</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-head"><h3>Pool Breakdown</h3></div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surface2);border-radius:var(--radius-sm);">
+              <span>Total spin allocation</span><strong id="exposure-total-allocated">$0.00</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surface2);border-radius:var(--radius-sm);">
+              <span>Prizes paid out</span><strong id="exposure-paid" style="color:var(--green);">$0.00</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surface2);border-radius:var(--radius-sm);">
+              <span>Expired to Lambo</span><strong id="exposure-expired" style="color:var(--gold);">$0.00</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:var(--radius-sm);">
+              <span><strong>Pending liability</strong></span><strong id="exposure-pending-breakdown" style="color:var(--yellow);">$0.00</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260402f"></script>
+<script src="nav.js?v=20260402f"></script>
+<script src="js/admin-exposure.js?v=20260402f"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const message = document.getElementById('exposure-message');
+  const ids = ['exposure-safe-badge','exposure-spin-pool','exposure-pending','exposure-ratio','exposure-lambo','exposure-gauge','exposure-total-allocated','exposure-paid','exposure-expired','exposure-pending-breakdown'];
+  const el = Object.fromEntries(ids.map(function (id) { return [id, document.getElementById(id)]; }));
+  if (!message) return;
+
+  function setMessage(text) {
+    message.textContent = text;
+    message.style.display = text ? 'block' : 'none';
+    message.style.background = 'rgba(239,83,80,.08)';
+    message.style.border = '1px solid rgba(239,83,80,.2)';
+    message.style.color = '#ff9b99';
+    message.style.padding = '12px 14px';
+    message.style.borderRadius = '10px';
+    message.style.marginBottom = '16px';
+  }
+  function num(v,d){ return new Intl.NumberFormat('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}).format(Number(v||0)); }
+  function currency(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(v||0)); }
+
+  fetch('api/admin/exposure.php', { credentials:'same-origin' })
+    .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+    .then(function (payload) {
+      if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Failed to load exposure');
+      const d = payload.json.data;
+      if (el['exposure-safe-badge']) el['exposure-safe-badge'].textContent = d.liability_status + ' - ' + num(d.liability_ratio, 0) + '%';
+      if (el['exposure-spin-pool']) el['exposure-spin-pool'].textContent = currency(d.spin_pool);
+      if (el['exposure-pending']) el['exposure-pending'].textContent = currency(d.pending_liability);
+      if (el['exposure-ratio']) el['exposure-ratio'].textContent = num(d.liability_ratio, 0) + '%';
+      if (el['exposure-lambo']) el['exposure-lambo'].textContent = currency(d.lambo_fund);
+      if (el['exposure-gauge']) el['exposure-gauge'].textContent = num(d.liability_ratio, 0) + '%';
+      if (el['exposure-total-allocated']) el['exposure-total-allocated'].textContent = currency(d.spin_pool);
+      if (el['exposure-paid']) el['exposure-paid'].textContent = currency(d.paid_rewards);
+      if (el['exposure-expired']) el['exposure-expired'].textContent = currency(d.expired_reallocated);
+      if (el['exposure-pending-breakdown']) el['exposure-pending-breakdown'].textContent = currency(d.pending_liability);
+    })
+    .catch(function (error) { setMessage(error.message || 'Failed to load exposure'); });
+});
+</script>
+</body>
+</html>

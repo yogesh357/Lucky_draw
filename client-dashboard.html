@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Madocks Client Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="screen-tabs">
+    <a class="screen-tab" href="how-it-works.html">How It Works</a>
+    <a class="screen-tab" href="login.html">Login</a>
+    <a class="screen-tab active" href="client-dashboard.html">Client Dashboard</a>
+    <a class="screen-tab" href="spin.html">Spin Engine</a>
+    <a class="screen-tab" href="sure-win.html">Sure Win</a>
+    <a class="screen-tab" href="lambo.html">Lambo Fund</a>
+    <a class="screen-tab" href="ib-dashboard.html">IB Dashboard</a>
+    <a class="screen-tab" href="mib-dashboard.html">MIB Dashboard</a>
+    <a class="screen-tab" href="leaderboard.html">Leaderboard</a>
+    <a class="screen-tab" href="rewards.html">Rewards</a>
+    <a class="screen-tab" href="admin-overview.html">Admin Overview</a>
+    <a class="screen-tab" href="admin-config.html">Admin Config</a>
+    <a class="screen-tab" href="admin-trade-sync.html">Admin Trade Sync</a>
+    <a class="screen-tab" href="admin-exposure.html">Admin Exposure</a>
+    <a class="screen-tab" href="admin-fraud.html">Admin Fraud</a>
+  </div>
+
+  <div class="app">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">M</div>
+        <div>
+          <div class="logo-text">Madocks</div>
+          <div class="logo-sub">Rewards Platform</div>
+        </div>
+      </div>
+      <div class="nav-section">Main</div>
+      <a class="nav-item active" href="client-dashboard.html"><span class="icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="spin.html"><span class="icon">🎰</span> Spin Engine</a>
+      <a class="nav-item" href="sure-win.html"><span class="icon">🏆</span> Sure Win</a>
+      <a class="nav-item" href="lambo.html"><span class="icon">🏎️</span> Lambo Fund</a>
+      <div class="sidebar-footer">
+        <div class="avatar">RC</div>
+        <div>
+          <div id="client-email" class="avatar-name">client@demo.com</div>
+          <div class="avatar-tier">Client</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-right">
+          <div class="topbar-badge">
+            <div class="dot"></div> Live from ledger
+          </div>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div id="dashboard-message" style="display:none;"></div>
+        <div class="alert alert-yellow">
+          <span>Time</span>
+          <div><strong><span id="expiring-spins-alert">0</span> spin credits are close to expiry.</strong> Use them
+            before month-end.</div>
+          <a class="btn btn-sm btn-secondary" style="margin-left:auto;white-space:nowrap;" href="spin.html">Spin Now</a>
+        </div>
+
+        <div class="grid grid-4" style="margin-bottom:24px;">
+          <div class="card">
+            <div class="card-title">Monthly Lots</div>
+            <div id="monthly-lots" class="stat-value">0.00</div>
+            <div class="stat-sub">Synced from backend</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Spin Credits</div>
+            <div id="spin-balance" class="stat-value" style="color:var(--blue);">0</div>
+            <div class="stat-sub">Available to spin</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Sure Win Points</div>
+            <div id="surewin-points" class="stat-value" style="color:var(--green);">0</div>
+            <div id="surewin-next" class="stat-sub">Next milestone</div>
+            <div class="progress-wrap">
+              <div class="progress-track">
+                <div id="surewin-progress-fill" class="progress-fill green" style="width:0%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Lambo Progress</div>
+            <div id="lambo-progress" class="stat-value" style="color:var(--gold);">0%</div>
+            <div id="lambo-contribution" class="stat-sub">$0.00 contributed</div>
+            <div class="progress-wrap">
+              <div class="progress-track">
+                <div id="lambo-progress-fill" class="progress-fill gold" style="width:0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-bottom:24px;">
+          <div class="card">
+            <div class="section-head">
+              <h3>Activity History</h3>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Detail</th>
+                    <th>Impact</th>
+                  </tr>
+                </thead>
+                <tbody id="activity-history-body">
+                  <tr>
+                    <td colspan="4">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="expiry-card">
+              <div class="expiry-icon">Time</div>
+              <div>
+                <div id="expiring-spins-card" class="expiry-count">0</div>
+                <div class="expiry-label">spins currently nearing expiry</div>
+                <a class="btn btn-sm btn-secondary" style="margin-top:8px;" href="spin.html">Spin Now</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js?v=20260402e"></script>
+  <script src="nav.js?v=20260402e"></script>
+  <script src="js/client-dashboard.js?v=20260402e"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const ids = [
+        'dashboard-message', 'client-email', 'monthly-lots', 'spin-balance', 'surewin-points', 'lambo-progress',
+        'lambo-contribution', 'lambo-progress-fill', 'surewin-next', 'surewin-progress-fill',
+        'expiring-spins-alert', 'expiring-spins-card', 'activity-history-body'
+      ];
+      const el = Object.fromEntries(ids.map(function (id) { return [id, document.getElementById(id)]; }));
+      if (!el['dashboard-message']) return;
+
+      function setMessage(text, type) {
+        const palette = {
+          info: { bg: 'rgba(79,123,255,.08)', border: 'rgba(79,123,255,.2)', color: '#9fb7ff' },
+          success: { bg: 'rgba(46,204,138,.08)', border: 'rgba(46,204,138,.2)', color: '#7fe3ad' },
+          error: { bg: 'rgba(239,83,80,.08)', border: 'rgba(239,83,80,.2)', color: '#ff9b99' }
+        };
+        const c = palette[type] || palette.info;
+        el['dashboard-message'].textContent = text;
+        el['dashboard-message'].style.display = text ? 'block' : 'none';
+        el['dashboard-message'].style.background = c.bg;
+        el['dashboard-message'].style.border = '1px solid ' + c.border;
+        el['dashboard-message'].style.color = c.color;
+        el['dashboard-message'].style.padding = '12px 14px';
+        el['dashboard-message'].style.borderRadius = '10px';
+        el['dashboard-message'].style.marginBottom = '16px';
+        el['dashboard-message'].style.fontSize = '13px';
+      }
+
+      function number(value, digits) {
+        return new Intl.NumberFormat('en-US', { minimumFractionDigits: digits || 0, maximumFractionDigits: digits || 0 }).format(Number(value || 0));
+      }
+
+      function currency(value) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(Number(value || 0));
+      }
+
+      function shortDate(value) {
+        if (!value) return '-';
+        return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+      }
+
+      function safeText(id, value) {
+        if (el[id]) el[id].textContent = value;
+      }
+
+      async function loadDashboard() {
+        const [meRes, dashRes, lamboRes, milestonesRes] = await Promise.all([
+          fetch('api/auth/me.php', { credentials: 'same-origin' }),
+          fetch('api/user/dashboard.php', { credentials: 'same-origin' }),
+          fetch('api/lambo/get_balance.php', { credentials: 'same-origin' }),
+          fetch('api/surewin/milestones.php', { credentials: 'same-origin' })
+        ]);
+
+        const meJson = await meRes.json();
+        if (!meRes.ok || meJson.ok === false) throw new Error(meJson.message || 'Session expired');
+
+        const dashJson = await dashRes.json();
+        const lamboJson = await lamboRes.json();
+        const milestoneJson = await milestonesRes.json();
+        if (!dashRes.ok || dashJson.ok === false) throw new Error(dashJson.message || 'Dashboard load failed');
+        if (!lamboRes.ok || lamboJson.ok === false) throw new Error(lamboJson.message || 'Lambo load failed');
+        if (!milestonesRes.ok || milestoneJson.ok === false) throw new Error(milestoneJson.message || 'Milestones load failed');
+
+        const data = dashJson.data;
+        const lambo = lamboJson.data;
+        const milestones = milestoneJson.data.milestones || [];
+        const next = milestones.find(function (item) { return item.status !== 'unlocked'; }) || milestones[milestones.length - 1];
+
+        safeText('client-email', meJson.data.email);
+        safeText('monthly-lots', number(data.lots, 2));
+        safeText('spin-balance', number(data.spins, 0));
+        safeText('surewin-points', number(data.points, 0));
+        safeText('lambo-progress', number(lambo.progress_percent, 0) + '%');
+        safeText('lambo-contribution', currency(lambo.user_balance) + ' contributed');
+        if (el['lambo-progress-fill']) el['lambo-progress-fill'].style.width = Math.min(100, Number(lambo.progress_percent || 0)) + '%';
+        safeText('surewin-next', next ? ('Next milestone: ' + number(next.points_required, 0)) : 'All milestones unlocked');
+        if (el['surewin-progress-fill']) el['surewin-progress-fill'].style.width = (next ? Math.min(100, Number(next.progress_percent || 0)) : 100) + '%';
+        safeText('expiring-spins-alert', number(data.expiring_spins, 0));
+        safeText('expiring-spins-card', number(data.expiring_spins, 0));
+
+        if (el['activity-history-body']) {
+          el['activity-history-body'].innerHTML = (data.recent_activity || []).map(function (item) {
+            const impact = item.metric_b ? ('+' + number(item.metric_b, 0) + ' pts') : (item.metric_a ? currency(item.metric_a) : '-');
+            const badge = item.entry_type === 'TRADE' ? 'blue' : (item.entry_type === 'SPIN' ? 'green' : 'gold');
+            return '<tr><td>' + shortDate(item.created_at) + '</td><td><span class="badge badge-' + badge + '">' + item.entry_type + '</span></td><td>' + (item.detail || '-') + '</td><td>' + impact + '</td></tr>';
+          }).join('') || '<tr><td colspan="4">No activity yet</td></tr>';
+        }
+      }
+
+      loadDashboard().catch(function (error) {
+        setMessage(error.message || 'Failed to load dashboard', 'error');
+      });
+    });
+  </script>
+</body>
+
+</html>

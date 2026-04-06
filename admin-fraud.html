@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Madocks Admin Fraud</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="screen-tabs">
+    <a class="screen-tab" href="admin-overview.html">Admin Overview</a>
+    <a class="screen-tab" href="admin-config.html">Admin Config</a>
+    <a class="screen-tab" href="admin-trade-sync.html">Admin Trade Sync</a>
+    <a class="screen-tab" href="admin-exposure.html">Admin Exposure</a>
+    <a class="screen-tab active" href="admin-fraud.html">Admin Fraud</a>
+  </div>
+
+  <div class="app">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark" style="background:var(--red);">A</div>
+        <div>
+          <div class="logo-text">Admin Panel</div>
+          <div class="logo-sub">Madocks Rewards</div>
+        </div>
+      </div>
+      <div class="nav-section">Admin</div>
+      <a class="nav-item" href="admin-overview.html">Overview</a>
+      <a class="nav-item" href="admin-exposure.html">Exposure</a>
+      <a class="nav-item" href="admin-trade-sync.html">Trade Sync</a>
+      <a class="nav-item" href="admin-config.html">Config</a>
+      <a class="nav-item active" href="admin-fraud.html">Fraud</a>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title">Fraud Flags</div>
+        <div class="topbar-right"><span id="fraud-open-count" class="badge badge-red">Loading...</span></div>
+      </div>
+      <div class="page-content">
+        <div id="fraud-message" style="display:none;"></div>
+        <div class="alert alert-red"><span>Alert</span>
+          <div>Flagged accounts should be reviewed before any manual adjustment or payout action.</div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div class="section-head">
+            <h3>Open Flags</h3>
+          </div>
+          <div id="fraud-open-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <h3>Resolved / Excluded Accounts</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Flag</th>
+                <th>Action</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody id="fraud-resolved-body">
+              <tr>
+                <td colspan="4">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js?v=20260402f"></script>
+  <script src="nav.js?v=20260402f"></script>
+  <script src="js/admin-fraud.js?v=20260402f"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const message = document.getElementById('fraud-message');
+    const count = document.getElementById('fraud-open-count');
+    const openList = document.getElementById('fraud-open-list');
+    const resolved = document.getElementById('fraud-resolved-body');
+    if (!message || !count || !openList || !resolved) return;
+
+    function setMessage(text) {
+      message.textContent = text;
+      message.style.display = text ? 'block' : 'none';
+      message.style.background = 'rgba(239,83,80,.08)';
+      message.style.border = '1px solid rgba(239,83,80,.2)';
+      message.style.color = '#ff9b99';
+      message.style.padding = '12px 14px';
+      message.style.borderRadius = '10px';
+      message.style.marginBottom = '16px';
+    }
+
+    fetch('api/admin/fraud.php', { credentials:'same-origin' })
+      .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+      .then(function (payload) {
+        if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Failed to load fraud data');
+        const d = payload.json.data;
+        const flags = d.flags || [];
+        const excluded = d.excluded_accounts || [];
+        count.textContent = flags.length + ' require review';
+        openList.innerHTML = flags.map(function (flag) {
+          return '<div class="fraud-flag"><div class="fraud-icon">!</div><div class="fraud-id">' + flag.email + '</div><div class="fraud-reason">' + flag.reason + '</div><div style="display:flex;gap:8px;margin-left:auto;"><span class="badge badge-red">' + flag.status + '</span></div></div>';
+        }).join('') || '<div style="color:var(--muted);">No open fraud flags.</div>';
+        resolved.innerHTML = excluded.map(function (account) {
+          return '<tr><td>' + account.email + '</td><td>Eligibility review</td><td><span class="badge badge-red">' + account.status + '</span></td><td>' + account.role + '</td></tr>';
+        }).join('') || '<tr><td colspan="4">No excluded accounts yet</td></tr>';
+      })
+      .catch(function (error) { setMessage(error.message || 'Failed to load fraud data'); });
+  });
+  </script>
+</body>
+
+</html>

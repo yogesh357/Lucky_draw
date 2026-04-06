@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Madocks Leaderboard</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<div class="screen-tabs">
+  <a class="screen-tab" href="how-it-works.html">How It Works</a>
+  <a class="screen-tab" href="login.html">Login</a>
+  <a class="screen-tab" href="client-dashboard.html">Client Dashboard</a>
+  <a class="screen-tab" href="spin.html">Spin Engine</a>
+  <a class="screen-tab" href="sure-win.html">Sure Win</a>
+  <a class="screen-tab" href="lambo.html">Lambo Fund</a>
+  <a class="screen-tab" href="ib-dashboard.html">IB Dashboard</a>
+  <a class="screen-tab" href="mib-dashboard.html">MIB Dashboard</a>
+  <a class="screen-tab active" href="leaderboard.html">Leaderboard</a>
+  <a class="screen-tab" href="rewards.html">Rewards</a>
+  <a class="screen-tab" href="admin-overview.html">Admin Overview</a>
+  <a class="screen-tab" href="admin-config.html">Admin Config</a>
+  <a class="screen-tab" href="admin-trade-sync.html">Admin Trade Sync</a>
+  <a class="screen-tab" href="admin-exposure.html">Admin Exposure</a>
+  <a class="screen-tab" href="admin-fraud.html">Admin Fraud</a>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">M</div><div><div class="logo-text">Madocks</div><div class="logo-sub">Rewards Platform</div></div></div>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="client-dashboard.html">Dashboard</a>
+    <a class="nav-item" href="spin.html">Spin Engine</a>
+    <a class="nav-item" href="sure-win.html">Sure Win</a>
+    <a class="nav-item" href="lambo.html">Lambo Fund</a>
+    <div class="nav-section">Explore</div>
+    <a class="nav-item active" href="leaderboard.html">Leaderboard</a>
+    <a class="nav-item" href="rewards.html">Rewards</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar"><div class="topbar-title">Leaderboard</div><div class="topbar-right"><div id="leaderboard-month" class="topbar-badge">Live</div></div></div>
+    <div class="page-content">
+      <div id="leaderboard-message" style="display:none;"></div>
+      <div class="grid grid-2" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="section-head"><h3>Top Traders - Monthly Lots</h3></div>
+          <table>
+            <thead><tr><th>#</th><th>Trader</th><th>Lots</th><th>Tier</th></tr></thead>
+            <tbody id="leaderboard-traders-body">
+              <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="section-head"><h3>Top IB / MIB - Network Lots</h3></div>
+          <table>
+            <thead><tr><th>#</th><th>Leader</th><th>Role</th><th>Network Lots</th></tr></thead>
+            <tbody id="leaderboard-leaders-body">
+              <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-head"><h3>Status Tiers</h3></div>
+        <div class="grid grid-4">
+          <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);">
+            <div style="font-weight:700;">Bronze</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">0 - 499 lots/mo</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);">
+            <div style="font-weight:700;">Silver</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">500 - 899 lots/mo</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:var(--radius-sm);">
+            <div style="font-weight:700;color:var(--yellow);">Gold</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">900 - 1199 lots/mo</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:rgba(79,123,255,.06);border:1px solid rgba(79,123,255,.2);border-radius:var(--radius-sm);">
+            <div style="font-weight:700;color:var(--blue2);">Diamond</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">1200+ lots/mo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260402g"></script>
+<script src="nav.js?v=20260402g"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const message = document.getElementById('leaderboard-message');
+  const month = document.getElementById('leaderboard-month');
+  const tradersBody = document.getElementById('leaderboard-traders-body');
+  const leadersBody = document.getElementById('leaderboard-leaders-body');
+  if (!message || !month || !tradersBody || !leadersBody) return;
+
+  function setMessage(text) {
+    message.textContent = text;
+    message.style.display = text ? 'block' : 'none';
+    message.style.background = 'rgba(239,83,80,.08)';
+    message.style.border = '1px solid rgba(239,83,80,.2)';
+    message.style.color = '#ff9b99';
+    message.style.padding = '12px 14px';
+    message.style.borderRadius = '10px';
+    message.style.marginBottom = '16px';
+  }
+  function num(v,d){ return new Intl.NumberFormat('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}).format(Number(v||0)); }
+
+  fetch('api/user/leaderboard.php', { credentials:'same-origin' })
+    .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+    .then(function (payload) {
+      if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Failed to load leaderboard');
+      const d = payload.json.data;
+      month.textContent = String(d.month).slice(0, 7);
+      tradersBody.innerHTML = (d.traders || []).map(function (item, index) {
+        const badge = item.tier === 'Diamond' ? 'gold' : item.tier === 'Gold' ? 'yellow' : 'muted';
+        const you = item.is_me ? ' <span style="font-size:11px;color:var(--muted);">(you)</span>' : '';
+        return '<tr' + (item.is_me ? ' style="background:rgba(245,166,35,.04);"' : '') + '><td>' + (index + 1) + '</td><td><strong>' + item.email + '</strong>' + you + '</td><td><strong>' + num(item.lots,2) + '</strong></td><td><span class="badge badge-' + badge + '">' + item.tier + '</span></td></tr>';
+      }).join('') || '<tr><td colspan="4">No trader data yet</td></tr>';
+      leadersBody.innerHTML = (d.leaders || []).map(function (item, index) {
+        const badge = item.role === 'MIB' ? 'gold' : 'blue';
+        return '<tr><td>' + (index + 1) + '</td><td>' + item.email + '</td><td><span class="badge badge-' + badge + '">' + item.role + '</span></td><td>' + num(item.network_lots,2) + '</td></tr>';
+      }).join('') || '<tr><td colspan="4">No network leader data yet</td></tr>';
+    })
+    .catch(function (error) { setMessage(error.message || 'Failed to load leaderboard'); });
+});
+</script>
+</body>
+</html>

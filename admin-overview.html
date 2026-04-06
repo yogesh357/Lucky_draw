@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Madocks Admin Overview</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="screen-tabs">
+  <a class="screen-tab active" href="admin-overview.html">Admin Overview</a>
+  <a class="screen-tab" href="admin-config.html">Admin Config</a>
+  <a class="screen-tab" href="admin-trade-sync.html">Admin Trade Sync</a>
+  <a class="screen-tab" href="admin-exposure.html">Admin Exposure</a>
+  <a class="screen-tab" href="admin-fraud.html">Admin Fraud</a>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark" style="background:var(--red);">A</div><div><div class="logo-text">Admin Panel</div><div class="logo-sub">Madocks Rewards</div></div></div>
+    <div class="nav-section">Admin</div>
+    <a class="nav-item active" href="admin-overview.html">Overview</a>
+    <a class="nav-item" href="admin-exposure.html">Exposure</a>
+    <a class="nav-item" href="admin-trade-sync.html">Trade Sync</a>
+    <a class="nav-item" href="admin-config.html">Config</a>
+    <a class="nav-item" href="admin-fraud.html" id="overview-open-flags-link">Fraud</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Admin Overview</div>
+      <div class="topbar-right"><div id="overview-system-health" class="topbar-badge">Loading...</div></div>
+    </div>
+    <div class="page-content">
+      <div id="overview-message" style="display:none;"></div>
+      <div class="grid grid-4" style="margin-bottom:24px;">
+        <div class="metric-card"><div class="metric-label">Total Users</div><div id="overview-total-users" class="metric-value">0</div><div class="metric-sub">Current user base</div></div>
+        <div class="metric-card"><div class="metric-label">Monthly Lots</div><div id="overview-monthly-lots" class="metric-value">0</div><div class="metric-sub">Current month</div></div>
+        <div class="metric-card"><div class="metric-label">Spin Pool</div><div id="overview-spin-pool" class="metric-value" style="color:var(--blue);">$0.00</div><div class="metric-sub">Allocated from ledger</div></div>
+        <div class="metric-card"><div class="metric-label">Lambo Fund</div><div id="overview-lambo-fund" class="metric-value" style="color:var(--gold);">$0.00</div><div class="metric-sub">Current fund total</div></div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="section-head"><h3>Liability Monitor</h3><span id="overview-liability-badge" class="badge badge-green">Safe</span></div>
+          <div style="text-align:center;padding:16px 0;">
+            <div class="gauge-wrap"><div class="gauge-track"></div><div class="gauge-fill"></div><div id="overview-liability-ratio" class="gauge-val">0%</div></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:28px;">Liability ratio from live exposure data</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-size:13px;margin-top:8px;">
+            <span style="color:var(--muted);">Pending rewards</span><strong id="overview-pending-rewards">$0.00</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-size:13px;">
+            <span style="color:var(--muted);">Spin pool allocated</span><strong id="overview-spin-allocated">$0.00</strong>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-head"><h3>Quick Actions</h3></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a class="btn btn-secondary" style="justify-content:flex-start;" href="admin-trade-sync.html">Run Trade Sync</a>
+            <a class="btn btn-secondary" style="justify-content:flex-start;" href="admin-exposure.html">Open Exposure</a>
+            <a class="btn btn-danger" style="justify-content:flex-start;" href="admin-fraud.html">Open Fraud Review</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260402f"></script>
+<script src="nav.js?v=20260402f"></script>
+<script src="js/admin-overview.js?v=20260402f"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const message = document.getElementById('overview-message');
+  const ids = ['overview-system-health','overview-total-users','overview-monthly-lots','overview-spin-pool','overview-lambo-fund','overview-liability-badge','overview-liability-ratio','overview-pending-rewards','overview-spin-allocated','overview-open-flags-link'];
+  const el = Object.fromEntries(ids.map(function (id) { return [id, document.getElementById(id)]; }));
+  if (!message) return;
+
+  function setMessage(text, type) {
+    const palette = {
+      info: { bg: 'rgba(79,123,255,.08)', border: 'rgba(79,123,255,.2)', color: '#9fb7ff' },
+      error: { bg: 'rgba(239,83,80,.08)', border: 'rgba(239,83,80,.2)', color: '#ff9b99' }
+    };
+    const c = palette[type] || palette.info;
+    message.textContent = text;
+    message.style.display = text ? 'block' : 'none';
+    message.style.background = c.bg;
+    message.style.border = '1px solid ' + c.border;
+    message.style.color = c.color;
+    message.style.padding = '12px 14px';
+    message.style.borderRadius = '10px';
+    message.style.marginBottom = '16px';
+  }
+
+  function num(v,d){ return new Intl.NumberFormat('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}).format(Number(v||0)); }
+  function currency(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(v||0)); }
+
+  fetch('api/admin/overview.php', { credentials:'same-origin' })
+    .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+    .then(function (payload) {
+      if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Failed to load overview');
+      const d = payload.json.data;
+      if (el['overview-system-health']) el['overview-system-health'].textContent = d.system_health;
+      if (el['overview-total-users']) el['overview-total-users'].textContent = num(d.total_users, 0);
+      if (el['overview-monthly-lots']) el['overview-monthly-lots'].textContent = num(d.monthly_lots, 2);
+      if (el['overview-spin-pool']) el['overview-spin-pool'].textContent = currency(d.spin_pool);
+      if (el['overview-lambo-fund']) el['overview-lambo-fund'].textContent = currency(d.lambo_fund);
+      if (el['overview-liability-badge']) el['overview-liability-badge'].textContent = d.liability_ratio >= 70 ? 'Warning' : 'Safe';
+      if (el['overview-liability-ratio']) el['overview-liability-ratio'].textContent = num(d.liability_ratio, 0) + '%';
+      if (el['overview-pending-rewards']) el['overview-pending-rewards'].textContent = currency(d.pending_liability);
+      if (el['overview-spin-allocated']) el['overview-spin-allocated'].textContent = currency(d.spin_pool);
+      if (el['overview-open-flags-link']) el['overview-open-flags-link'].textContent = 'Fraud (' + num(d.open_flags, 0) + ' open)';
+    })
+    .catch(function (error) { setMessage(error.message || 'Failed to load overview', 'error'); });
+});
+</script>
+</body>
+</html>

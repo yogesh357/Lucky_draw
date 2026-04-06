@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Madocks Sure Win</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="screen-tabs">
+  <a class="screen-tab" href="how-it-works.html">How It Works</a>
+  <a class="screen-tab" href="login.html">Login</a>
+  <a class="screen-tab" href="client-dashboard.html">Client Dashboard</a>
+  <a class="screen-tab" href="spin.html">Spin Engine</a>
+  <a class="screen-tab active" href="sure-win.html">Sure Win</a>
+  <a class="screen-tab" href="lambo.html">Lambo Fund</a>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">M</div><div><div class="logo-text">Madocks</div><div class="logo-sub">Rewards Platform</div></div></div>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="client-dashboard.html">Dashboard</a>
+    <a class="nav-item" href="spin.html">Spin Engine</a>
+    <a class="nav-item active" href="sure-win.html">Sure Win</a>
+    <a class="nav-item" href="lambo.html">Lambo Fund</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar"><div class="topbar-title">Sure Win</div><div class="topbar-right"><div id="surewin-top-points" class="topbar-badge" style="color:var(--green);">0 points</div></div></div>
+    <div class="page-content">
+      <div id="surewin-message" style="display:none;"></div>
+      <div class="grid grid-2" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="card-title">Your Progress</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0;">
+            <div id="surewin-current-points" class="stat-value" style="color:var(--green);">0</div>
+            <div style="color:var(--muted);">/ <span id="surewin-target-points">0</span> points</div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label"><span id="surewin-next-title">Next milestone</span><span id="surewin-remaining">0 pts remaining</span></div>
+            <div class="progress-track" style="height:12px;"><div id="surewin-progress-bar" class="progress-fill green" style="width:0%;"></div></div>
+          </div>
+          <div style="margin-top:16px;padding:12px;background:rgba(46,204,138,.06);border:1px solid rgba(46,204,138,.2);border-radius:var(--radius-sm);">
+            <div style="font-size:12px;color:var(--muted);">Points snapshot</div>
+            <div id="surewin-month-points" style="font-size:20px;font-weight:700;color:var(--green);">0 pts</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">How Points Work</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+            <div style="font-size:13px;">1 lot traded = 10 Sure Win points</div>
+            <div style="font-size:13px;">Trade spins can reward extra points.</div>
+            <div style="font-size:13px;">Milestones are guaranteed and non-duplicate.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><h3>Reward Milestones</h3></div>
+        <div id="milestones-list" class="milestones"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260402e"></script>
+<script src="nav.js?v=20260402e"></script>
+<script src="js/sure-win.js?v=20260402e"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const message = document.getElementById('surewin-message');
+  const ids = ['surewin-top-points','surewin-current-points','surewin-target-points','surewin-next-title','surewin-remaining','surewin-progress-bar','surewin-month-points','milestones-list'];
+  const el = Object.fromEntries(ids.map(function (id) { return [id, document.getElementById(id)]; }));
+  if (!message) return;
+
+  function setMessage(text, type) {
+    const palette = {
+      info: { bg: 'rgba(79,123,255,.08)', border: 'rgba(79,123,255,.2)', color: '#9fb7ff' },
+      success: { bg: 'rgba(46,204,138,.08)', border: 'rgba(46,204,138,.2)', color: '#7fe3ad' },
+      error: { bg: 'rgba(239,83,80,.08)', border: 'rgba(239,83,80,.2)', color: '#ff9b99' }
+    };
+    const c = palette[type] || palette.info;
+    message.textContent = text;
+    message.style.display = text ? 'block' : 'none';
+    message.style.background = c.bg;
+    message.style.border = '1px solid ' + c.border;
+    message.style.color = c.color;
+    message.style.padding = '12px 14px';
+    message.style.borderRadius = '10px';
+    message.style.marginBottom = '16px';
+    message.style.fontSize = '13px';
+  }
+
+  function num(v){ return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Number(v||0)); }
+  function currency(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(v||0)); }
+
+  async function loadSureWin() {
+    const [mRes, dRes] = await Promise.all([
+      fetch('api/surewin/milestones.php', { credentials:'same-origin' }),
+      fetch('api/user/dashboard.php', { credentials:'same-origin' })
+    ]);
+    const mJson = await mRes.json();
+    const dJson = await dRes.json();
+    if (!mRes.ok || mJson.ok === false) throw new Error(mJson.message || 'Failed to load milestones');
+    if (!dRes.ok || dJson.ok === false) throw new Error(dJson.message || 'Failed to load dashboard points');
+
+    const points = mJson.data.points;
+    const milestones = mJson.data.milestones || [];
+    const next = milestones.find(function (item) { return item.status !== 'unlocked'; }) || milestones[milestones.length - 1];
+
+    if (el['surewin-top-points']) el['surewin-top-points'].textContent = num(points) + ' points';
+    if (el['surewin-current-points']) el['surewin-current-points'].textContent = num(points);
+    if (el['surewin-target-points']) el['surewin-target-points'].textContent = next ? num(next.points_required) : num(points);
+    if (el['surewin-next-title']) el['surewin-next-title'].textContent = next ? ('Next: ' + next.title) : 'All milestones unlocked';
+    if (el['surewin-remaining']) el['surewin-remaining'].textContent = next ? (num(Math.max(0, next.points_required - points)) + ' pts remaining') : '0 pts remaining';
+    if (el['surewin-progress-bar']) el['surewin-progress-bar'].style.width = (next ? Math.min(100, Number(next.progress_percent || 0)) : 100) + '%';
+    if (el['surewin-month-points']) el['surewin-month-points'].textContent = '+' + num(dJson.data.points_month) + ' pts';
+    if (el['milestones-list']) {
+      el['milestones-list'].innerHTML = milestones.map(function (item) {
+        const style = item.status === 'claimable' ? 'border-color:var(--blue);background:rgba(79,123,255,.04);' : (item.status === 'locked' ? 'opacity:.6;' : '');
+        const iconClass = item.status === 'unlocked' ? 'done' : (item.status === 'claimable' ? 'active' : 'locked');
+        const iconText = item.status === 'unlocked' ? 'OK' : (item.status === 'claimable' ? 'GO' : 'LOCK');
+        const badge = item.status === 'unlocked' ? 'green' : (item.status === 'claimable' ? 'blue' : 'muted');
+        return '<div class="milestone-item" style="' + style + '"><div class="milestone-icon ' + iconClass + '">' + iconText + '</div><div><div style="font-weight:700;">' + item.title + '</div><div style="font-size:12px;color:var(--muted);">' + currency(item.reward_value) + ' estimated value</div></div><div class="milestone-pts"><span class="badge badge-' + badge + '">' + item.status + '</span><strong>' + num(item.points_required) + ' pts</strong></div></div>';
+      }).join('');
+    }
+  }
+
+  loadSureWin().catch(function (error) { setMessage(error.message || 'Failed to load Sure Win', 'error'); });
+});
+</script>
+</body>
+</html>

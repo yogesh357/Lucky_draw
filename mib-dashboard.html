@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Madocks MIB Dashboard</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body data-role="MIB">
+<div class="screen-tabs">
+  <a class="screen-tab" href="login.html">Login</a>
+  <a class="screen-tab" href="ib-dashboard.html">IB Dashboard</a>
+  <a class="screen-tab active" href="mib-dashboard.html">MIB Dashboard</a>
+  <a class="screen-tab" href="spin.html">Spin Engine</a>
+  <a class="screen-tab" href="lambo.html">Lambo Fund</a>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">M</div><div><div class="logo-text">Madocks</div><div class="logo-sub">Rewards Platform</div></div></div>
+    <div class="nav-section">MIB</div>
+    <a class="nav-item active" href="mib-dashboard.html">Dashboard</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar"><div class="topbar-title">MIB Dashboard</div><div class="topbar-right"><div id="network-user-email" class="topbar-badge">Loading...</div></div></div>
+    <div class="page-content">
+      <div id="network-message" style="display:none;"></div>
+      <div class="grid grid-4" style="margin-bottom:24px;">
+        <div class="card"><div class="card-title">Own Lots</div><div id="own-lots" class="stat-value">0</div><div class="stat-sub">Current month</div></div>
+        <div class="card"><div class="card-title">Network Lots</div><div id="network-lots" class="stat-value" style="color:var(--blue);">0</div><div id="network-count" class="stat-sub">Network volume</div></div>
+        <div class="card"><div class="card-title">Lambo Own</div><div id="own-lambo" class="stat-value" style="color:var(--gold);">$0.00</div></div>
+        <div class="card"><div class="card-title">Lambo Network</div><div id="network-lambo" class="stat-value" style="color:var(--gold);">$0.00</div></div>
+      </div>
+      <div class="card">
+        <div class="section-head"><h3>Top Network Accounts</h3></div>
+        <table>
+          <thead><tr><th>#</th><th>Account</th><th>Lots</th><th>Status</th></tr></thead>
+          <tbody id="network-leaders-body">
+            <tr><td colspan="4">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260402c"></script>
+<script src="nav.js?v=20260402c"></script>
+<script src="js/network-dashboard.js?v=20260402c"></script>
+</body>
+</html>

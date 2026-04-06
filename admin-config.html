@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Madocks Admin Config</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="screen-tabs">
+    <a class="screen-tab" href="admin-overview.html">Admin Overview</a>
+    <a class="screen-tab active" href="admin-config.html">Admin Config</a>
+    <a class="screen-tab" href="admin-trade-sync.html">Admin Trade Sync</a>
+    <a class="screen-tab" href="admin-exposure.html">Admin Exposure</a>
+    <a class="screen-tab" href="admin-fraud.html">Admin Fraud</a>
+  </div>
+
+  <div class="app">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark" style="background:var(--red);">A</div>
+        <div>
+          <div class="logo-text">Admin Panel</div>
+          <div class="logo-sub">Madocks Rewards</div>
+        </div>
+      </div>
+      <div class="nav-section">Admin</div>
+      <a class="nav-item" href="admin-overview.html">Overview</a>
+      <a class="nav-item" href="admin-exposure.html">Exposure</a>
+      <a class="nav-item" href="admin-trade-sync.html">Trade Sync</a>
+      <a class="nav-item active" href="admin-config.html">Config</a>
+      <a class="nav-item" href="admin-fraud.html">Fraud</a>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title">System Configuration</div>
+        <div class="topbar-right"><button form="config-form" class="btn btn-primary btn-sm">Save Changes</button></div>
+      </div>
+      <div class="page-content">
+        <div id="config-message" style="display:none;"></div>
+        <form id="config-form">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="section-head">
+              <h3>Financial Rules</h3>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Exposure Cap</div>
+              <div class="config-desc">Hard limit per lot</div>
+              <div class="config-value"><input class="form-input" name="exposure_cap_per_lot" /></div>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Spin Allocation</div>
+              <div class="config-desc">USD to spin per lot</div>
+              <div class="config-value"><input class="form-input" name="spin_usd_per_lot" /></div>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Lambo Allocation</div>
+              <div class="config-desc">USD to lambo per lot</div>
+              <div class="config-value"><input class="form-input" name="lambo_usd_per_lot" /></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px;">
+            <div class="section-head">
+              <h3>Sure Win Settings</h3>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Points Per Lot</div>
+              <div class="config-desc">Points credited per lot</div>
+              <div class="config-value"><input class="form-input" name="surewin_points_per_lot" /></div>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Notifications Max Per Day</div>
+              <div class="config-desc">Anti-spam ceiling</div>
+              <div class="config-value"><input class="form-input" name="notifications_max_per_day" /></div>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Expiry Warning Days</div>
+              <div class="config-desc">Notify before expiry</div>
+              <div class="config-value"><input class="form-input" name="expiry_warning_days" /></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-head">
+              <h3>Campaign</h3>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Lambo Target Amount</div>
+              <div class="config-desc">Campaign goal</div>
+              <div class="config-value"><input class="form-input" name="lambo_target_amount" /></div>
+            </div>
+            <div class="config-row">
+              <div class="config-label">Campaign Status</div>
+              <div class="config-desc">Current status</div>
+              <div class="config-value"><select class="form-input" name="campaign_status">
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="PAUSED">PAUSED</option>
+                  <option value="COMPLETED">COMPLETED</option>
+                </select></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js?v=20260402f"></script>
+  <script src="nav.js?v=20260402f"></script>
+  <script src="js/admin-config.js?v=20260402f"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('config-form');
+    const message = document.getElementById('config-message');
+    if (!form || !message) return;
+
+    function setMessage(text, ok) {
+      message.textContent = text;
+      message.style.display = text ? 'block' : 'none';
+      message.style.background = ok ? 'rgba(46,204,138,.08)' : 'rgba(239,83,80,.08)';
+      message.style.border = ok ? '1px solid rgba(46,204,138,.2)' : '1px solid rgba(239,83,80,.2)';
+      message.style.color = ok ? '#7fe3ad' : '#ff9b99';
+      message.style.padding = '12px 14px';
+      message.style.borderRadius = '10px';
+      message.style.marginBottom = '16px';
+    }
+
+    fetch('api/admin/config.php', { credentials:'same-origin' })
+      .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+      .then(function (payload) {
+        if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Failed to load config');
+        Object.entries(payload.json.data || {}).forEach(function (entry) {
+          const input = form.querySelector('[name="' + entry[0] + '"]');
+          if (input) input.value = entry[1] ?? '';
+        });
+      })
+      .catch(function (error) { setMessage(error.message || 'Failed to load config', false); });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      fetch('api/admin/config.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, json:j }; }); })
+      .then(function (payload) {
+        if (!payload.ok || payload.json.ok === false) throw new Error(payload.json.message || 'Failed to save config');
+        setMessage(payload.json.message || 'Configuration saved', true);
+      })
+      .catch(function (error) { setMessage(error.message || 'Failed to save config', false); });
+    });
+  });
+  </script>
+</body>
+
+</html>
